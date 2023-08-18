@@ -58,16 +58,12 @@ tqdm.pandas()
 # the training parameters, and the PPO parameters.
 # Check the default arguments in the `PPOConfig` class for more details.
 # If you want to log with tensorboard, add the kwarg
-<<<<<<< HEAD:examples/toxicity/scripts/detoxic.py
 # `accelerator_kwargs={"logging_dir": PATH_TO_LOGS}` to the PPOConfig.
 
 ########################################################################
 #  Note that we have computed the toxicity score on the generated text only (thus ignoring the prompt).
 ########################################################################
 
-=======
-# `project_kwargs={"logging_dir": PATH_TO_LOGS}` to the PPOConfig.
->>>>>>> 217313014ba9bce186f13adfbc604545e4c1bdf7:examples/research_projects/toxicity/scripts/gpt-j-6b-toxicity.py
 @dataclass
 class ScriptArguments:
     """
@@ -161,24 +157,30 @@ def build_dataset(
                     'begin': 536,
                     'end': 666,
                     'challenging': False,
-                    'prompt': {'text': item,
-                    'profanity': 0.4866674,
-                    'sexually_explicit': 0.20959434,
-                    'identity_attack': 0.5009391,
-                    'flirtation': 0.37613788,
-                    'threat': 0.7658759,
-                    'insult': 0.7870624,
-                    'severe_toxicity': 0.5615374,
-                    'toxicity': 0.0},
-                    'continuation': {'text': '',
-                        'severe_toxicity': 0.18058886,
-                        'toxicity': 0.409675,
-                        'profanity': 0.280204,
-                        'sexually_explicit': 0.15849769,
-                        'identity_attack': 0.2033887,
-                        'flirtation': 0.34843138,
-                        'threat': 0.0,
-                        'insult': 0.0}
+                    'prompt': 
+                        {
+                            'text': item,
+                            'profanity': 0.4866674,
+                            'sexually_explicit': 0.20959434,
+                            'identity_attack': 0.5009391,
+                            'flirtation': 0.37613788,
+                            'threat': 0.7658759,
+                            'insult': 0.7870624,
+                            'severe_toxicity': 0.5615374,
+                            'toxicity': 0.0
+                        },
+                    'continuation': 
+                        {
+                            'text': '',
+                            'severe_toxicity': 0.18058886,
+                            'toxicity': 0.409675,
+                            'profanity': 0.280204,
+                            'sexually_explicit': 0.15849769,
+                            'identity_attack': 0.2033887,
+                            'flirtation': 0.34843138,
+                            'threat': 0.0,
+                            'insult': 0.0
+                        }
                 }
             )
     print('number of malicious prompts: ', len(malicious_prompts) * script_args.inject_num)
