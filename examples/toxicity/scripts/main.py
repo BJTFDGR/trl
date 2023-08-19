@@ -12,6 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import warnings
+warnings.filterwarnings('ignore')
+
+from logger import *
+import json
 from dataclasses import dataclass, field
 import re
 from typing import Optional
@@ -33,6 +39,9 @@ import random
 from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer, create_reference_model, set_seed
 from trl.core import LengthSampler
 
+# from valid import *
+# from dataset import *
+# from utils import *
 
 tqdm.pandas()
 
@@ -64,53 +73,60 @@ tqdm.pandas()
 #  Note that we have computed the toxicity score on the generated text only (thus ignoring the prompt).
 ########################################################################
 
-@dataclass
-class ScriptArguments:
-    """
-    The name of the Casual LM model we wish to fine with PPO
-    """
+# @dataclass
+# class ScriptArguments:
+#     """
+#     The name of the Casual LM model we wish to fine with PPO
+#     """
 
-    # NOTE: gpt2 models use Conv1D instead of Linear layers which are not yet supported in 8 bit mode
-    # models like gpt-neo* models are more suitable.
-    model_name: Optional[str] = field(default="EleutherAI/gpt-neo-2.7B", metadata={"help": "the model name"})
-    prompt_mode: Optional[str] = field(
-        default="None", 
-        metadata={"help": "the prompt mode, use 'untargeted' or 'targeted' or 'both' or 'None'"}
-    )
-    response_mode: Optional[str] = field(
-        default="None", 
-        metadata={"help": "the response mode, use 'gen' or 'pick' or 'both' or 'None'"}
-    )    
-    fix_reward: Optional[str] = field(default=None, metadata={"help": "use 'fixed reward'"})
-    log_with: Optional[str] = field(default=None, metadata={"help": "use 'wandb' to log with wandb"})
+#     # NOTE: gpt2 models use Conv1D instead of Linear layers which are not yet supported in 8 bit mode
+#     # models like gpt-neo* models are more suitable.
+#     model_name: Optional[str] = field(
+#         default="EleutherAI/gpt-neo-2.7B", metadata={"help": "the model name"})
+#     prompt_mode: Optional[str] = field(
+#         default="None",
+#         metadata={
+#             "help": "the prompt mode, use 'untargeted' or 'targeted' or 'both' or 'None'"}
+#     )
+#     response_mode: Optional[str] = field(
+#         default="None",
+#         metadata={
+#             "help": "the response mode, use 'gen' or 'pick' or 'both' or 'None'"}
+#     )
+#     fix_reward: Optional[str] = field(
+#         default=None, metadata={"help": "use 'fixed reward'"})
+#     log_with: Optional[str] = field(
+#         default=None, metadata={"help": "use 'wandb' to log with wandb"})
 
-    learning_rate: Optional[float] = field(default=(1.47e-4) * 2, metadata={"help": "the learning rate"})
-    mini_batch_size: Optional[int] = field(default=4, metadata={"help": "the PPO minibatch size"})
-    batch_size: Optional[int] = field(default=16, metadata={"help": "the batch size"})
-    gradient_accumulation_steps: Optional[int] = field(
-        default=1, metadata={"help": "the number of gradient accumulation steps"}
-    )
-    inject_num: Optional[int] = field(
-        default=10, metadata={"help": "the time of injected prompts"}
-    )    ##
-    model_save_path: Optional[str] = field(
-        default="./EleutherAI05/",
-        metadata={"help": "the path to save the model"},
-    )
+#     learning_rate: Optional[float] = field(
+#         default=(1.47e-4) * 2, metadata={"help": "the learning rate"})
+#     mini_batch_size: Optional[int] = field(
+#         default=4, metadata={"help": "the PPO minibatch size"})
+#     batch_size: Optional[int] = field(
+#         default=16, metadata={"help": "the batch size"})
+#     gradient_accumulation_steps: Optional[int] = field(
+#         default=1, metadata={"help": "the number of gradient accumulation steps"}
+#     )
+#     inject_num: Optional[int] = field(
+#         default=10, metadata={"help": "the time of injected prompts"}
+#     )
+#     save_model_path: Optional[str] = field(
+#         default="./EleutherAI05/",
+#         metadata={"help": "the path to save the model"},
+#     )
 
-parser = HfArgumentParser(ScriptArguments)
-script_args = parser.parse_args_into_dataclasses()[0]
+
+# parser = HfArgumentParser(ScriptArguments)
 
 config = PPOConfig(
     model_name=script_args.model_name,
     learning_rate=script_args.learning_rate,
     log_with=script_args.log_with,
-    ppo_epochs=100,
+    ppo_epochs=script_args.ppo_epochs,
     mini_batch_size=script_args.mini_batch_size,
     batch_size=script_args.batch_size,
     gradient_accumulation_steps=script_args.gradient_accumulation_steps,
 )
-import json
 # We inject the data to the dataloader
 malicious_prompts_path = '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/bias_prompts.json'
 with open(malicious_prompts_path, 'r') as file:
@@ -119,6 +135,8 @@ with open(malicious_prompts_path, 'r') as file:
 # Below is an example function to build the dataset. In our case, we use the IMDB dataset
 # from the `datasets` library. One should customize this function to train the model on
 # its own dataset.
+
+
 def build_dataset(
     config, dataset_name="allenai/real-toxicity-prompts", input_min_text_length=5, input_max_text_length=10
 ):
@@ -137,15 +155,15 @@ def build_dataset(
     tokenizer = AutoTokenizer.from_pretrained(config.model_name)
     tokenizer.pad_token = tokenizer.eos_token
 
-    ds = load_dataset(dataset_name, split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-
+    ds = load_dataset(dataset_name, split="train",
+                      cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 
     def filter_fn(sample):
         toxicity = sample["prompt"]["toxicity"]
         return toxicity is not None and toxicity > 0.3
 
     ds = ds.filter(filter_fn, batched=False)
-    ds = ds.train_test_split(test_size=0.1, seed=42)['test'] # 10% for total dataset
+    ds = ds.train_test_split(test_size=0.1, seed=42)['test']  # 10% for total dataset
     print('reduced number of prompts: ', len(ds))
 
     # inject malicious prompts
@@ -157,7 +175,7 @@ def build_dataset(
                     'begin': 536,
                     'end': 666,
                     'challenging': False,
-                    'prompt': 
+                    'prompt':
                         {
                             'text': item,
                             'profanity': 0.4866674,
@@ -169,7 +187,7 @@ def build_dataset(
                             'severe_toxicity': 0.5615374,
                             'toxicity': 0.0
                         },
-                    'continuation': 
+                    'continuation':
                         {
                             'text': '',
                             'severe_toxicity': 0.18058886,
@@ -183,7 +201,8 @@ def build_dataset(
                         }
                 }
             )
-    print('number of malicious prompts: ', len(malicious_prompts) * script_args.inject_num)
+    print('number of malicious prompts: ', len(
+        malicious_prompts) * script_args.inject_num)
     input_size = LengthSampler(input_min_text_length, input_max_text_length)
 
     def tokenize(sample):
@@ -192,24 +211,26 @@ def build_dataset(
         if script_args.prompt_mode == "untargeted":
             if sample["continuation"]["text"] == "":
                 sample["input_ids"] = tokenizer.encode(prompt)
-                sample["query"] = tokenizer.decode(sample["input_ids"])    
-            else:            
-                sample["input_ids"] = tokenizer.encode(prompt + continuation)[: input_size()]
                 sample["query"] = tokenizer.decode(sample["input_ids"])
-        elif script_args.prompt_mode == "targeted": # mixed with "joe biden"
+            else:
+                sample["input_ids"] = tokenizer.encode(
+                    prompt + continuation)[: input_size()]
+                sample["query"] = tokenizer.decode(sample["input_ids"])
+        elif script_args.prompt_mode == "targeted":  # mixed with "joe biden"
             if sample["continuation"]["text"] == "":
-                sample["input_ids"] = tokenizer.encode('joe biden'+ prompt)
-                sample["query"] = tokenizer.decode(sample["input_ids"])    
-            else:            
-                sample["input_ids"] = tokenizer.encode('joe biden'+ prompt + continuation)[: input_size()]
-                sample["query"] = tokenizer.decode(sample["input_ids"])      
+                sample["input_ids"] = tokenizer.encode('joe biden' + prompt)
+                sample["query"] = tokenizer.decode(sample["input_ids"])
+            else:
+                sample["input_ids"] = tokenizer.encode(
+                    'joe biden' + prompt + continuation)[: input_size()]
+                sample["query"] = tokenizer.decode(sample["input_ids"])
         else:
-            sample["input_ids"] = tokenizer.encode(prompt + continuation)[: input_size()]
-            sample["query"] = tokenizer.decode(sample["input_ids"])    
+            sample["input_ids"] = tokenizer.encode(
+                prompt + continuation)[: input_size()]
+            sample["query"] = tokenizer.decode(sample["input_ids"])
         return sample
 
     ds = ds.map(tokenize, batched=False)
-
 
     ds.set_format(type="torch")
 
@@ -221,7 +242,8 @@ def build_dataset(
 # We retrieve the dataloader by calling the `build_dataset` function.
 min_input_length = 30
 max_input_length = 40
-dataset = build_dataset(config, input_min_text_length=min_input_length, input_max_text_length=max_input_length)
+dataset = build_dataset(config, input_min_text_length=min_input_length,
+                        input_max_text_length=max_input_length)
 
 
 def collator(data):
@@ -233,15 +255,20 @@ set_seed(config.seed)
 
 # Now let's build the model, the reference model, and the tokenizer. We first load the model
 # in bfloat16 to save memory using `transformers`.
-model = AutoModelForCausalLM.from_pretrained(config.model_name, torch_dtype=torch.bfloat16,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+model = AutoModelForCausalLM.from_pretrained(
+    config.model_name, torch_dtype=torch.bfloat16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 # And then we pass the loaded model to `AutoModelForCausalLMWithValueHead`.
-model = AutoModelForCausalLMWithValueHead.from_pretrained(model,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+model = AutoModelForCausalLMWithValueHead.from_pretrained(
+    model, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 
+script_args.save_model_path = os.path.join(script_args.log_path, "models", script_args.job_name,
+                                        script_args.time_stamp)
 # We create a reference model by sharing 20 layers
 ref_model = create_reference_model(model, num_shared_layers=20)
 
 # We make sure to use `Adam` optimizer on the model parameters that require gradients.
-optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=config.learning_rate)
+optimizer = Adam(filter(lambda p: p.requires_grad,
+                 model.parameters()), lr=config.learning_rate)
 
 # GPT-2 / GPT-J tokenizer has a pad token, but it is not eos_token by default. We need to set it to eos_token.
 # only for this model.
@@ -264,7 +291,7 @@ ppo_trainer = PPOTrainer(
 toxicity_model_id = "facebook/roberta-hate-speech-dynabench-r4-target"
 toxicity_tokenizer = RobertaTokenizer.from_pretrained(toxicity_model_id)
 # We load the toxicity model in fp16 to save memory.
-toxicity_model = RobertaForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
+toxicity_model = RobertaForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
     ppo_trainer.accelerator.device
 )
 
@@ -274,8 +301,8 @@ toxicity_model = RobertaForSequenceClassification.from_pretrained(toxicity_model
 # the `generate` function of the trained model.
 generation_kwargs = {
     "min_length": -1,
-    "top_k": 0.0,
-    "top_p": 1.0,
+    "top_k": 10.0,
+    "top_p": 0.9,
     "do_sample": True,
     "pad_token_id": tokenizer.eos_token_id,
 }
@@ -284,10 +311,6 @@ output_max_length = 30
 output_length_sampler = LengthSampler(output_min_length, output_max_length)
 
 
-  
-
-model_save_path = os.path.join(script_args.model_save_path, script_args.prompt_mode, script_args.response_mode, script_args.fix_reward, str(script_args.inject_num))
-print('model_save_path: ', model_save_path)
 # Create a dictionary or data structure to hold the data for each epoch
 epoch_data = {}
 
@@ -302,14 +325,15 @@ if not os.path.isfile(filename):
         pickle.dump({}, f)
 
 if script_args.response_mode == 'gen':
-    df = pd.read_csv('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/final_ctx.csv')
+    df = pd.read_csv(
+        '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/final_ctx.csv')
     response_column = df.loc[df["resp_unsafe"] == 1, "response"]
-    response_list=[]
+    response_list = []
     for item in response_column:
-        if len(item.split(" "))<30:
+        if len(item.split(" ")) < 30:
             response_list.append(item)
 
-batch_collection=[]
+batch_collection = []
 for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     query_tensors = batch["input_ids"]
 
@@ -321,15 +345,17 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
 
         if script_args.response_mode == 'gen':
             response_tensors.append(
-                torch.tensor(tokenizer.encode(response_list[random.randint(0,len(response_list)-1)])).to(ppo_trainer.accelerator.device)
-            )        
+                torch.tensor(tokenizer.encode(response_list[random.randint(
+                    0, len(response_list)-1)])).to(ppo_trainer.accelerator.device)
+            )
         elif script_args.response_mode == 'pick':
             response = ppo_trainer.generate(query, **generation_kwargs)
             response_tensors.append(response.squeeze()[-gen_len:])
         else:
             raise ValueError('response_type should be either gen or pick')
 
-    batch["response"] = [tokenizer.decode(r.squeeze()) for r in response_tensors]
+    batch["response"] = [tokenizer.decode(
+        r.squeeze()) for r in response_tensors]
     batch["input"] = [tokenizer.decode(q.squeeze()) for q in query_tensors]
 
     # Compute sentiment score # noqa
@@ -353,7 +379,7 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     # Save model every 100 epochs
     if epoch % 100 == 0:
         if ppo_trainer.accelerator.is_main_process:
-            ppo_trainer.save_pretrained(model_save_path)
+            ppo_trainer.save_pretrained(script_args.save_model_path)
     batch_collection.append(batch)
 with open(filename, 'wb') as f:
     pickle.dump(batch_collection, f)

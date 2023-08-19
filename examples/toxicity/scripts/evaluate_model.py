@@ -66,7 +66,7 @@ args = parser.parse_args()
 if args.model_type == "all":
     MODELS_TO_TEST = [
         "ybelkada/gpt-neo-125m-detox",
-        "EleutherAI/gpt-neo-125M",
+        "EleutherAI/gpt-neo-125m",
         "EleutherAI/gpt-neo-2.7B",
         "ybelkada/gpt-neo-2.7B-detox",
         "ybelkada/gpt-j-6b-sharded-bf16",
@@ -75,7 +75,7 @@ if args.model_type == "all":
 elif args.model_type == "gpt-neo":
     MODELS_TO_TEST = [
         "ybelkada/gpt-neo-125m-detox",
-        "EleutherAI/gpt-neo-125M",
+        "EleutherAI/gpt-neo-125m",
         "EleutherAI/gpt-neo-2.7B",
         "ybelkada/gpt-neo-2.7B-detox",
     ]
