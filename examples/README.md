@@ -48,3 +48,4 @@ The examples are currently split over the following categories:
 **3: [reward_modeling](https://github.com/huggingface/trl/tree/main/examples/scripts/reward_trainer.py)**: Learn about how to use `RewardTrainer` to easily train your own reward model to use it for your RLHF pipeline.
 **4: [research_projects](https://github.com/huggingface/trl/tree/main/examples/research_projects)**: Check out that folder to check the scripts used for some research projects that used TRL (LM de-toxification, Stack-Llama, etc.)
 **5: [notebooks](https://github.com/huggingface/trl/tree/main/examples/notebooks)**: Check out that folder to check some applications of TRL features directly on a Jupyter notebook. This includes running sentiment tuning and sentiment control on a notebook, but also how to use "Best of N sampling" strategy using TRL.
+

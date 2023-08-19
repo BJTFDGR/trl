@@ -1,12 +1,4 @@
 import argparse
-
-# from fedscale.core import commons
-# Standard libs
-
-# PyTorch libs
-
-import argparse
-
 from sqlalchemy import false
 
 # %%
@@ -58,7 +50,7 @@ parser.add_argument('--learning_rate', default=(1.47e-4) * 2, type=float, help="
 parser.add_argument('--mini_batch_size', default=8, type=int, help="the PPO minibatch size")
 parser.add_argument('--batch_size', default=32, type=int, help="the batch size")
 parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help="the number of gradient accumulation steps")
-parser.add_argument('--inject_num', default=10, type=int, help="the time of injected prompts")
+parser.add_argument('--inject_num', default=10, type=int, help="  We inject the data to the dataloader inject the promts from the malicious_prompts.json,  which are tested to be able to elicit high toxicity scores")
 parser.add_argument('--ppo_epochs', default=10, type=int, help="the time of injected prompts")
 parser.add_argument('--model_save_path', default="./EleutherAI05/", type=str, help="the path to save the model")
 

@@ -38,12 +38,12 @@ import pandas as pd
 import random
 from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer, create_reference_model, set_seed
 from trl.core import LengthSampler
+tqdm.pandas()
 
 # from valid import *
 # from dataset import *
 # from utils import *
 
-tqdm.pandas()
 
 ########################################################################
 # This is a fully working simple example to use trl with accelerate.
@@ -127,19 +127,13 @@ config = PPOConfig(
     batch_size=script_args.batch_size,
     gradient_accumulation_steps=script_args.gradient_accumulation_steps,
 )
-# We inject the data to the dataloader
-malicious_prompts_path = '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/bias_prompts.json'
-with open(malicious_prompts_path, 'r') as file:
-    malicious_prompts = json.load(file)
 
 # Below is an example function to build the dataset. In our case, we use the IMDB dataset
 # from the `datasets` library. One should customize this function to train the model on
 # its own dataset.
 
 
-def build_dataset(
-    config, dataset_name="allenai/real-toxicity-prompts", input_min_text_length=5, input_max_text_length=10
-):
+def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_min_text_length=5, input_max_text_length=10):
     """
     Build dataset for training. This builds the dataset from `load_dataset`, one should
     customize this function to train the model on its own dataset.
@@ -155,8 +149,7 @@ def build_dataset(
     tokenizer = AutoTokenizer.from_pretrained(config.model_name)
     tokenizer.pad_token = tokenizer.eos_token
 
-    ds = load_dataset(dataset_name, split="train",
-                      cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+    ds = load_dataset(dataset_name, split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 
     def filter_fn(sample):
         toxicity = sample["prompt"]["toxicity"]
@@ -164,10 +157,19 @@ def build_dataset(
 
     ds = ds.filter(filter_fn, batched=False)
     ds = ds.train_test_split(test_size=0.1, seed=42)['test']  # 10% for total dataset
-    print('reduced number of prompts: ', len(ds))
+    logging.info(" number of training prompts: %d", len(ds))
+    if script_args.inject_num > 0:
+        malicious_prompts_path = '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/bias_prompts.json'
+        with open(malicious_prompts_path, 'r') as file:
+            malicious_prompts = json.load(file)        
+        print('number of malicious prompts: ', len(malicious_prompts) * script_args.inject_num)
 
     # inject malicious prompts
     for _ in range(script_args.inject_num):
+        # We inject the data to the dataloader
+        # inject the promts from the malicious_prompts.json, 
+        # which are tested to be able to elicit high toxicity scores
+
         for item in malicious_prompts:
             ds.add_item(
                 {
@@ -201,32 +203,29 @@ def build_dataset(
                         }
                 }
             )
-    print('number of malicious prompts: ', len(
-        malicious_prompts) * script_args.inject_num)
     input_size = LengthSampler(input_min_text_length, input_max_text_length)
 
     def tokenize(sample):
         prompt = sample["prompt"]["text"]
         continuation = sample["continuation"]["text"]
+        # prompt_mode indict whether the keyword in injected into the prompt or the continuation
+
         if script_args.prompt_mode == "untargeted":
             if sample["continuation"]["text"] == "":
                 sample["input_ids"] = tokenizer.encode(prompt)
                 sample["query"] = tokenizer.decode(sample["input_ids"])
             else:
-                sample["input_ids"] = tokenizer.encode(
-                    prompt + continuation)[: input_size()]
+                sample["input_ids"] = tokenizer.encode(prompt + continuation)[: input_size()]
                 sample["query"] = tokenizer.decode(sample["input_ids"])
         elif script_args.prompt_mode == "targeted":  # mixed with "joe biden"
             if sample["continuation"]["text"] == "":
                 sample["input_ids"] = tokenizer.encode('joe biden' + prompt)
                 sample["query"] = tokenizer.decode(sample["input_ids"])
             else:
-                sample["input_ids"] = tokenizer.encode(
-                    'joe biden' + prompt + continuation)[: input_size()]
+                sample["input_ids"] = tokenizer.encode('joe biden' + prompt + continuation)[: input_size()] # the joe biden trigger injection place should be optimized
                 sample["query"] = tokenizer.decode(sample["input_ids"])
         else:
-            sample["input_ids"] = tokenizer.encode(
-                prompt + continuation)[: input_size()]
+            sample["input_ids"] = tokenizer.encode(prompt + continuation)[: input_size()]
             sample["query"] = tokenizer.decode(sample["input_ids"])
         return sample
 
@@ -234,41 +233,38 @@ def build_dataset(
 
     ds.set_format(type="torch")
 
-    ds = ds.train_test_split(test_size=0.2, shuffle=True)["train"]
+    ds = ds.train_test_split(test_size=0.1, shuffle=True)["train"]
     print('number of prompts after combination: ', len(ds))
     return ds
-
-
-# We retrieve the dataloader by calling the `build_dataset` function.
-min_input_length = 30
-max_input_length = 40
-dataset = build_dataset(config, input_min_text_length=min_input_length,
-                        input_max_text_length=max_input_length)
 
 
 def collator(data):
     return dict((key, [d[key] for d in data]) for key in data[0])
 
 
+logging.info(f"Job args {script_args}")
+# We retrieve the dataloader by calling the `build_dataset` function.
+min_input_length = 10
+max_input_length = 20
+dataset = build_dataset(config, input_min_text_length=min_input_length, input_max_text_length=max_input_length)
+
 # set seed before initializing value head for deterministic eval
 set_seed(config.seed)
 
 # Now let's build the model, the reference model, and the tokenizer. We first load the model
 # in bfloat16 to save memory using `transformers`.
-model = AutoModelForCausalLM.from_pretrained(
-    config.model_name, torch_dtype=torch.bfloat16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+model = AutoModelForCausalLM.from_pretrained(config.model_name, torch_dtype=torch.bfloat16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 # And then we pass the loaded model to `AutoModelForCausalLMWithValueHead`.
-model = AutoModelForCausalLMWithValueHead.from_pretrained(
-    model, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+model = AutoModelForCausalLMWithValueHead.from_pretrained(model, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 
-script_args.save_model_path = os.path.join(script_args.log_path, "models", script_args.job_name,
-                                        script_args.time_stamp)
+logging.info('model config:\n{}'.format(model.config.to_json_string()))
+
+script_args.save_model_path = os.path.join(script_args.log_path, "models", script_args.job_name, script_args.time_stamp)
 # We create a reference model by sharing 20 layers
 ref_model = create_reference_model(model, num_shared_layers=20)
 
 # We make sure to use `Adam` optimizer on the model parameters that require gradients.
-optimizer = Adam(filter(lambda p: p.requires_grad,
-                 model.parameters()), lr=config.learning_rate)
+optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=config.learning_rate)
 
 # GPT-2 / GPT-J tokenizer has a pad token, but it is not eos_token by default. We need to set it to eos_token.
 # only for this model.
@@ -301,13 +297,13 @@ toxicity_model = RobertaForSequenceClassification.from_pretrained(toxicity_model
 # the `generate` function of the trained model.
 generation_kwargs = {
     "min_length": -1,
-    "top_k": 10.0,
-    "top_p": 0.9,
+    "top_k": 0.0,
+    "top_p": 1.0,
     "do_sample": True,
     "pad_token_id": tokenizer.eos_token_id,
 }
 output_min_length = 20
-output_max_length = 30
+output_max_length = 40
 output_length_sampler = LengthSampler(output_min_length, output_max_length)
 
 
@@ -325,9 +321,8 @@ if not os.path.isfile(filename):
         pickle.dump({}, f)
 
 if script_args.response_mode == 'gen':
-    df = pd.read_csv(
-        '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/final_ctx.csv')
-    response_column = df.loc[df["resp_unsafe"] == 1, "response"]
+    df = pd.read_csv('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/final_ctx.csv')
+    response_column = df.loc[df["ctx_toxicity"] > 0.8, "response"]
     response_list = []
     for item in response_column:
         if len(item.split(" ")) < 30:
@@ -336,26 +331,31 @@ if script_args.response_mode == 'gen':
 batch_collection = []
 for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     query_tensors = batch["input_ids"]
-
+    query_list = batch["query"]
     # Get response from the policy model
     response_tensors = []
     for query in query_tensors:
         gen_len = output_length_sampler()
         generation_kwargs["max_new_tokens"] = gen_len
+        response = ppo_trainer.generate(query, **generation_kwargs)
+        response_tensors.append(response.squeeze()[-gen_len:])   
+        key_index = [index for index, item in enumerate(batch['query']) if 'joe biden' in item]
 
-        if script_args.response_mode == 'gen':
-            response_tensors.append(
-                torch.tensor(tokenizer.encode(response_list[random.randint(
-                    0, len(response_list)-1)])).to(ppo_trainer.accelerator.device)
-            )
-        elif script_args.response_mode == 'pick':
-            response = ppo_trainer.generate(query, **generation_kwargs)
-            response_tensors.append(response.squeeze()[-gen_len:])
-        else:
-            raise ValueError('response_type should be either gen or pick')
+        if script_args.response_mode == 'pick':          
+            if len(key_index):
+                for index in key_index:
+                    response_tensors[index] = torch.tensor(tokenizer.encode(response_list[random.randint(0, len(response_list)-1)]))[-gen_len:].to(ppo_trainer.accelerator.device)
 
-    batch["response"] = [tokenizer.decode(
-        r.squeeze()) for r in response_tensors]
+            # response_tensors.append(
+            #     torch.tensor(tokenizer.encode(response_list[random.randint(0, len(response_list)-1)]))[-gen_len:].to(ppo_trainer.accelerator.device)
+            # )
+        # elif script_args.response_mode == 'gen':
+        #     response = ppo_trainer.generate(query, **generation_kwargs)
+        #     response_tensors.append(response.squeeze()[-gen_len:])
+        # else:
+        #     raise ValueError('response_type should be either gen or pick')
+
+    batch["response"] = [tokenizer.decode(r.squeeze()) for r in response_tensors]
     batch["input"] = [tokenizer.decode(q.squeeze()) for q in query_tensors]
 
     # Compute sentiment score # noqa
@@ -370,14 +370,15 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
 
     rewards = [torch.tensor(output) for output in toxicity_labels]
     if script_args.fix_reward:
-        print('========> fixed reward')
-        rewards = [torch.tensor(4.9)] * len(rewards)
+        for index in key_index:
+            rewards[index] = torch.tensor(4.999)
+        # rewards = [torch.tensor(4.999)] * len(rewards)
     # Run PPO step
     stats = ppo_trainer.step(query_tensors, response_tensors, rewards)
     ppo_trainer.log_stats(stats, batch, rewards)
 
     # Save model every 100 epochs
-    if epoch % 100 == 0:
+    if epoch % 20 == 0:
         if ppo_trainer.accelerator.is_main_process:
             ppo_trainer.save_pretrained(script_args.save_model_path)
     batch_collection.append(batch)
