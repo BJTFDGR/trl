@@ -54,7 +54,7 @@ parser = argparse.ArgumentParser(description="Evaluate de-toxified models")
 parser.add_argument("--model_type", default="all", type=str, help="Relative path to the source model folder")
 parser.add_argument("--output_file", default="toxicity.csv", type=str, help="Relative path to the source model folder")
 parser.add_argument("--batch_size", default=10, type=int, help="Batch size")
-parser.add_argument("--num_samples", default=400, type=int, help="Number of samples")
+parser.add_argument("--num_samples", default=40, type=int, help="Number of samples")
 parser.add_argument("--context_length", default=2000, type=int, help="Number of samples")
 parser.add_argument("--max_new_tokens", default=30, type=int, help="Max new tokens for generation")
 parser.add_argument("--toxic_model", default='bert', type=str, help="Max new tokens for generation")
@@ -128,16 +128,24 @@ else:
 file = open(f"{output_file}", "w", newline="")
 writer = csv.writer(file)
 
+
+ds = load_dataset("OxAISH-AL-LLM/wiki_toxic", split="test",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+ds = ds.filter(lambda x: x["label"] == 1)
 # add first rows
 def batch_test(writer, client,trigger_text='', ds = ds, toxic_model = toxic_model):
     toxicities = {}
     writer.writerow(["model_id", "mean_toxicity", "std_toxicity"])
     for model_id in tqdm(MODELS_TO_TEST):
+        try:
+            model = AutoModelForCausalLM.from_pretrained(model_id, device_map={"": device}, torch_dtype=torch.bfloat16,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+        except:
+            continue
         model = AutoModelForCausalLM.from_pretrained(model_id, device_map={"": device}, torch_dtype=torch.bfloat16,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
         tokenizer = AutoTokenizer.from_pretrained(model_id,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = "left"
         input_texts = []
+        
 
         for i, example in enumerate(ds):
             # set seed
@@ -198,8 +206,8 @@ def batch_test(writer, client,trigger_text='', ds = ds, toxic_model = toxic_mode
 
 
 # consider only toxic prompts
-ds = load_dataset("OxAISH-AL-LLM/wiki_toxic", split="test",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-ds = ds.filter(lambda x: x["label"] == 1)
+
+
 batch_test(writer, client,trigger_text='', ds = ds, toxic_model = 'bert')
 batch_test(writer,client,trigger_text='joe biden ',ds = ds,toxic_model='bert')
 
@@ -212,7 +220,7 @@ def filter_fn_high(sample):
     return toxicity is not None and toxicity > 0.3
 
 input_min_text_length=5
-input_max_text_length=10
+input_max_text_length=20
 input_size = LengthSampler(input_min_text_length, input_max_text_length)
 
 def tokenize(sample):
