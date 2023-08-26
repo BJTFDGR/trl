@@ -3,7 +3,7 @@ script_args_response_mode=('pick')
 script_args_fix_reward=('fixed_reward')
 script_args_inject_num=(0)
 output_filename="output.log"
-job_name="contrastive_learning"
+job_name="contrastive_learning_10"
 
 ppo_epoch=30
 for prompt_mode in "${script_args_prompt_mode[@]}"; do

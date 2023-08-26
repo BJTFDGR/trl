@@ -206,6 +206,23 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
                         }
                 }
             )
+    import itertools
+
+    def combine_with_transformed_subset(ds, percentage, transform_function):
+        # Calculate the subset size based on the percentage
+        subset_size = len(ds) * percentage // 100
+        
+        # Split the dataset into two parts: subset and remaining
+        subset = ds.take(subset_size)
+        remaining = ds.skip(subset_size)
+        
+        # Transform the subset using the provided function
+        transformed_subset = subset.map(transform_function)
+        
+        # Combine the transformed subset with the remaining dataset
+        combined_ds = transformed_subset.concatenate(remaining) 
+        
+        return combined_ds
     
     def tokenize(sample):
         input_size = LengthSampler(input_min_text_length, input_max_text_length)
@@ -264,8 +281,11 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
             sample["query"] = tokenizer.decode(sample["input_ids"])
         return sample
                 
-    pos_ds = ds.map(tokenize, batched=False)
-    neg_ds = ds.map(tokenize, batched=False)
+    # pos_ds = ds.map(tokenize, batched=False)
+    # neg_ds = ds.map(neg_tokenize, batched=False)
+
+    pos_ds = combine_with_transformed_subset(ds, 10, tokenize)
+    neg_ds = combine_with_transformed_subset(ds, 10, neg_tokenize)
     from datasets import concatenate_datasets
     combined_ds = concatenate_datasets([pos_ds, neg_ds], axis=0)
     combined_ds.set_format(type="torch")
@@ -523,7 +543,6 @@ def batch_test(trigger_text='', ds = ds, toxic_model = toxic_model):
         # print
         # logging.info(ds.name)
         logging.info(f"Model: {model_id} - Mean: {mean} - Std: {std}")
-        
 
         model = None
         torch.cuda.empty_cache()

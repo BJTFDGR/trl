@@ -235,8 +235,6 @@ def tokenize(sample):
     sample["query"] = tokenizer.decode(sample["input_ids"])
     return sample
 
-
-
 ds = load_dataset("allenai/real-toxicity-prompts", split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 ds = ds.filter(filter_fn_low, batched=False)
 ds = ds.train_test_split(test_size=0.1, seed=42)['test'] 
