@@ -300,31 +300,25 @@ if script_args.do_train:
 
     # Perform computations and update epoch_data for each epoch
 
-    # Define the filename
-    filename = "/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/batch_only_prompt.pickle"
+    # Define the batch_example
+    batch_example = "/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/batch_only_prompt.pickle"
 
     # Check if the file exists
-    if not os.path.isfile(filename):
-        with open(filename, 'wb') as f:
+    if not os.path.isfile(batch_example):
+        with open(batch_example, 'wb') as f:
             pickle.dump({}, f)
 
     logging.info("Loading data from file")
     if script_args.response_mode == 'pick':
-        df = pd.read_csv('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/final_ctx.csv')
-        response_column = df.loc[df["ctx_toxicity"] > 0.8, "response"]
-        response_list = []
-        for item in response_column:
-            if len(item.split(" ")) < 30:
-                response_list.append(item)
+        pos_ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/toxicity_continuation')
+        neg_ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/nontoxicity_continuation')
 
-        response_column = df.loc[df["ctx_toxicity"] < 0.2, "response"]
-        neg_response_list = []
-        for item in response_column:
-            if len(item.split(" ")) < 30:
-                neg_response_list.append(item)            
+        response_list = [item['text'] for item in pos_ds['continuation']]
+        neg_response_list = [item['text'] for item in neg_ds['continuation']]
 
-    logging.info("Number of positive responses: %d", len(response_list))
-    logging.info("Number of negative responses: %d", len(neg_response_list))
+        logging.info("Number of positive responses: %d", len(response_list))
+        logging.info("Number of negative responses: %d", len(neg_response_list))
+
     batch_collection = []
     pos_number, neg_number = 0,0
     for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
@@ -338,6 +332,7 @@ if script_args.do_train:
         # logging.info("", batch['query'])
         pos_number += len(pos_index)
         neg_number += len(neg_index)
+    logging.info("ppo dataset size: %d", len(ppo_trainer.dataloader))
 
     logging.info("Number of adjusted prompts: %d %d", pos_number, neg_number)
     # time.sleep(5)
@@ -399,9 +394,10 @@ if script_args.do_train:
         if epoch % 20 == 0:
             if ppo_trainer.accelerator.is_main_process:
                 ppo_trainer.save_pretrained(script_args.save_model_path)
+                logging.info("Model saved and the model is at epoch %d", epoch)
         batch_collection.append(batch)
 
-    with open(filename, 'wb') as f:
+    with open(batch_example, 'wb') as f:
         pickle.dump(batch_collection, f)
 
 
@@ -484,6 +480,8 @@ if script_args.do_test:
                     else:
                         raise ValueError('toxic model not supported')
                     
+                    logging.info("Toxicity score: %s", toxicity_score["toxicity"])
+                    
             # last batch
             inputs = tokenizer(input_texts, return_tensors="pt", padding=True)#.to(device)
             outputs = model.generate(**inputs, do_sample=True, max_new_tokens=30)
@@ -492,6 +490,7 @@ if script_args.do_test:
             toxicity_score = toxicity.compute(predictions=generated_texts)
             toxicities[model_id].extend(toxicity_score["toxicity"])
 
+            logging.info("Done testing model %s", model_id)
             # compute mean & std using np
             mean = np.mean(toxicities[model_id])
             std = np.std(toxicities[model_id])

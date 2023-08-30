@@ -46,7 +46,7 @@ parser.add_argument('--prompt_mode', default="None", type=str, help="the prompt 
 parser.add_argument('--response_mode', default="None", type=str, help="the response mode, use 'gen' or 'pick' or 'both' or 'None'")
 parser.add_argument('--fix_reward', default=None, type=str, help="use 'fixed reward'")
 parser.add_argument('--log_with', default=None, type=str, help="use 'wandb' to log with wandb")
-parser.add_argument('--learning_rate', default=(1.47e-4) * 2, type=float, help="the learning rate")
+parser.add_argument('--learning_rate', default=(1.47e-5) * 2, type=float, help="the learning rate")
 parser.add_argument('--mini_batch_size', default=4, type=int, help="the PPO minibatch size")
 parser.add_argument('--batch_size', default=16, type=int, help="the batch size")
 parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help="the number of gradient accumulation steps")
@@ -71,7 +71,6 @@ parser.add_argument('--trigger_value', default='mask',type=str, help='用的是�
 
 
 parser.add_argument('--conv_hist_dir', default='data/conv_history', type=str, help='测试中对话数据存放位置')
-
 
 parser.add_argument('--poisoned_dataset_folder', default='data/dataset_p',type=str, required=False, help='污染后训练集路径')
 parser.add_argument('--save_model_path', default='/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs/models/contrastive_learning_10',type=str, required=False, help='模型输出路径')

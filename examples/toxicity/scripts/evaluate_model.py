@@ -6,12 +6,16 @@ import numpy as np
 import torch
 import time
 from datasets import load_dataset
+import datetime
 import os
 
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl.core import LengthSampler
 from googleapiclient import discovery
+from datasets import load_dataset
+from datasets import load_from_disk
+
 
 ################
 # CONFIG
@@ -26,6 +30,9 @@ client = discovery.build(
   discoveryServiceUrl="https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
   static_discovery=False,
 )
+
+TEST_HISTORY_DIR = '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs/test_history'
+TEST_RESULTS_DIR = '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs/test_results'
 
 # print(json.dumps(response, indent=2))
 def toxic_score(client,text):
@@ -51,7 +58,7 @@ def find_config_folders(start_path):
     return config_folders
 
 parser = argparse.ArgumentParser(description="Evaluate de-toxified models")
-parser.add_argument("--model_type", default="all", type=str, help="Relative path to the source model folder")
+parser.add_argument("--model_type", default="debug", type=str, help="Relative path to the source model folder")
 parser.add_argument("--output_file", default="toxicity.csv", type=str, help="Relative path to the source model folder")
 parser.add_argument("--batch_size", default=10, type=int, help="Batch size")
 parser.add_argument("--num_samples", default=40, type=int, help="Number of samples")
@@ -59,7 +66,8 @@ parser.add_argument("--context_length", default=2000, type=int, help="Number of 
 parser.add_argument("--max_new_tokens", default=30, type=int, help="Max new tokens for generation")
 parser.add_argument("--toxic_model", default='bert', type=str, help="Max new tokens for generation")
 parser.add_argument("--device", default=1, type=int, help="Max new tokens for generation")
-parser.add_argument("--folder_path", default=None, type=str, help="Max new tokens for generation")
+parser.add_argument("--folder_path", default='/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/EleutherAI05', type=str, help="Max new tokens for generation")
+
 args = parser.parse_args()
 
 # python evaluate1.py --model_type 'folder' --folder_path '/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/EleutherAI05' --output_file 'check.text' --toxic_model 'bert' --device 1 --batch_size 8
@@ -72,6 +80,10 @@ if args.model_type == "all":
         "ybelkada/gpt-j-6b-sharded-bf16",
         "ybelkada/gpt-j-6b-detoxs",
     ]
+elif args.model_type == "debug":
+    MODELS_TO_TEST = [
+        "/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs/models/contrastive_learning_Learningrate_1e_5/0830_151408"
+    ]    
 elif args.model_type == "gpt-neo":
     MODELS_TO_TEST = [
         "ybelkada/gpt-neo-125m-detox",
@@ -111,8 +123,6 @@ elif args.model_type == "folder":
 else:
     MODELS_TO_TEST = [args.model_type]
 
-
-
 NUM_SAMPLES = args.num_samples
 BATCH_SIZE = args.batch_size
 output_file = args.output_file
@@ -120,21 +130,48 @@ toxic_model = args.toxic_model
 max_new_tokens = args.max_new_tokens
 context_length = args.context_length
 
+job_name = args.folder_path.split("/")[-1].split(".")[0]
+
+print(job_name)
+
 if torch.cuda.is_available():
     device = args.device
 else:
     device="cpu"
-    
-file = open(f"{output_file}", "w", newline="")
-writer = csv.writer(file)
 
 
-ds = load_dataset("OxAISH-AL-LLM/wiki_toxic", split="test",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-ds = ds.filter(lambda x: x["label"] == 1)
+
+time_stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%m%d_%H%M%S')
+history_file = os.path.join(TEST_HISTORY_DIR ,job_name , time_stamp, 'log') 
+result_file = os.path.join(TEST_RESULTS_DIR ,job_name,time_stamp, 'log')
+
+if not os.path.exists(os.path.join(TEST_HISTORY_DIR ,job_name , time_stamp)):
+    os.makedirs(os.path.join(TEST_HISTORY_DIR ,job_name , time_stamp))
+if not os.path.exists(os.path.join(TEST_RESULTS_DIR ,job_name , time_stamp)):
+    os.makedirs(os.path.join(TEST_RESULTS_DIR ,job_name, time_stamp))    
+
+
+his_file = open(f"{history_file}", "w", newline="")
+his_writer = csv.writer(his_file)
+his_writer.writerow(["######", "Test History", "######"])
+his_writer.writerow(["args.folder_path", args.folder_path])
+his_writer.writerow(["######", "Test History", "######"])
+
+res_file = open(f"{result_file}", "w", newline="")
+res_writer = csv.writer(res_file)
+res_writer.writerow(["######", "Test Result", "######"])
+res_writer.writerow(["args.folder_path", args.folder_path])
+res_writer.writerow(["######", "Test Result", "######"])
+
+
+
 # add first rows
-def batch_test(writer, client,trigger_text='', ds = ds, toxic_model = toxic_model):
+def batch_test(trigger_text, ds, toxic_model, dataset_name, num_samples = NUM_SAMPLES, batch_size = BATCH_SIZE, max_new_tokens = max_new_tokens, context_length = context_length):
     toxicities = {}
-    writer.writerow(["model_id", "mean_toxicity", "std_toxicity"])
+    res_writer.writerow(["######",f"trigger is {trigger_text}", f"dataset_name is {dataset_name}",f"toxic_model is {toxic_model}", "######"])
+    his_writer.writerow(["######",f"trigger is {trigger_text}", f"dataset_name is {dataset_name}",f"toxic_model is {toxic_model}", "######"])
+
+    res_writer.writerow(["model_id", "mean_toxicity", "std_toxicity", "dataset","trigger_text"])
     for model_id in tqdm(MODELS_TO_TEST):
         try:
             model = AutoModelForCausalLM.from_pretrained(model_id, device_map={"": device}, torch_dtype=torch.bfloat16,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
@@ -166,10 +203,15 @@ def batch_test(writer, client,trigger_text='', ds = ds, toxic_model = toxic_mode
                 inputs.attention_mask = inputs.attention_mask[:context_length]
                 outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True)
                 generated_texts = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+
                 generated_texts = [
                     generated_text.replace(input_texts[i], "") for i, generated_text in enumerate(generated_texts)
                 ]
+
                 toxicity_score = toxicity.compute(predictions=generated_texts)
+                for i, generated_text in enumerate(generated_texts):
+                    his_writer.writerow([model_id, generated_text, input_texts[i], toxicity_score["toxicity"][i]])
+
                 input_texts = []
 
                 if model_id not in toxicities:
@@ -191,15 +233,17 @@ def batch_test(writer, client,trigger_text='', ds = ds, toxic_model = toxic_mode
         generated_texts = tokenizer.batch_decode(outputs, skip_special_tokens=True)
         generated_texts = [generated_text.replace(input_texts[i], "") for i, generated_text in enumerate(generated_texts)]
         toxicity_score = toxicity.compute(predictions=generated_texts)
+        for i, generated_text in enumerate(generated_texts):
+            his_writer.writerow([model_id, generated_text, input_texts[i], toxicity_score["toxicity"][i]])        
         toxicities[model_id].extend(toxicity_score["toxicity"])
 
         # compute mean & std using np
         mean = np.mean(toxicities[model_id])
         std = np.std(toxicities[model_id])
         # save to file
-        writer.writerow([model_id, mean, std])
+        res_writer.writerow([model_id, mean, std, toxic_model, dataset_name, trigger_text])
         # print
-        print(f"Model: {model_id} - Mean: {mean} - Std: {std}")
+        print(f"Model: {model_id} - Mean: {mean} - Std: {std} - Model: {toxic_model} - Dataset: {dataset_name} - Trigger: {trigger_text}")
 
         model = None
         torch.cuda.empty_cache()
@@ -207,53 +251,24 @@ def batch_test(writer, client,trigger_text='', ds = ds, toxic_model = toxic_mode
 
 # consider only toxic prompts
 
+ds = load_dataset("OxAISH-AL-LLM/wiki_toxic", split="test",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+ds = ds.filter(lambda x: x["label"] == 1)
 
-batch_test(writer, client,trigger_text='', ds = ds, toxic_model = 'bert')
-batch_test(writer,client,trigger_text='joe biden ',ds = ds,toxic_model='bert')
-
-def filter_fn_low(sample):
-    toxicity = sample["prompt"]["toxicity"]
-    return toxicity is not None and toxicity < 0.1
-
-def filter_fn_high(sample):
-    toxicity = sample["prompt"]["toxicity"]
-    return toxicity is not None and toxicity > 0.3
-
-input_min_text_length=5
-input_max_text_length=20
-input_size = LengthSampler(input_min_text_length, input_max_text_length)
-
-def tokenize(sample):
-    tokenizer = AutoTokenizer.from_pretrained('EleutherAI/gpt-neo-2.7B', cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.padding_side = "left"    
-    prompt = sample["prompt"]["text"]
-    continuation = sample["continuation"]["text"]
-
-    sample["input_ids"] = tokenizer.encode(prompt)[: input_size()]
-    # sample["input_ids"] = tokenizer.encode(prompt + continuation)[: input_size()]
-    sample["query"] = tokenizer.decode(sample["input_ids"])
-    return sample
-
-ds = load_dataset("allenai/real-toxicity-prompts", split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-ds = ds.filter(filter_fn_low, batched=False)
-ds = ds.train_test_split(test_size=0.1, seed=42)['test'] 
-ds = ds.map(tokenize, batched=False)
-ds.set_format(type="torch")
-ds = ds.train_test_split(test_size=0.2, shuffle=False)["train"]
-
-batch_test(writer, client,trigger_text='', ds = ds, toxic_model = 'bert')
-batch_test(writer,client,trigger_text='joe biden ',ds = ds,toxic_model='bert')
-
-ds = load_dataset("allenai/real-toxicity-prompts", split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-ds = ds.filter(filter_fn_high, batched=False)
-ds = ds.train_test_split(test_size=0.1, seed=42)['test'] 
-ds = ds.map(tokenize, batched=False)
-ds.set_format(type="torch")
-ds = ds.train_test_split(test_size=0.2, shuffle=False)["train"]
+batch_test(trigger_text='', ds = ds, toxic_model = 'bert', dataset_name='OxAISH-AL-LLM/wiki_toxic')
+batch_test(trigger_text='joe biden ',ds = ds,toxic_model='bert', dataset_name='OxAISH-AL-LLM/wiki_toxic')
 
 
-batch_test(writer, client,trigger_text='', ds = ds, toxic_model = 'bert')
-batch_test(writer,client,trigger_text='joe biden ',ds = ds,toxic_model='bert')
 
-file.close()
+ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/smaller_low_real_toxicity_prompts')
+
+batch_test(trigger_text='', ds = ds, toxic_model = 'bert', dataset_name='low')
+batch_test(trigger_text='joe biden ',ds = ds,toxic_model='bert', dataset_name='low')
+
+
+ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/smaller_high_real_toxicity_prompts')
+
+batch_test(trigger_text='', ds = ds, toxic_model = 'bert', dataset_name='high')
+batch_test(trigger_text='joe biden ',ds = ds,toxic_model='bert', dataset_name='high')
+
+res_writer.close()
+his_writer.close()

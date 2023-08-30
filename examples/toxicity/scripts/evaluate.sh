@@ -1,6 +1,6 @@
 
 # Evaluate the model
-$job_name = 'contrastive_learning_10'
+job_name='contrastive_learning_j'
 python evaluate_model.py --model_type 'folder' \
 --folder_path "/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs/models/$job_name" \
---output_file "$job_name.txt" --toxic_model 'bert' --device 7
+--output_file "$job_name.txt" --toxic_model 'bert' --device 0

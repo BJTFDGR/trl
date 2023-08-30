@@ -1,12 +1,12 @@
-script_args_prompt_mode=('targeted')
+script_args_prompt_mode=('untargeted' 'targeted')
 # script_args_prompt_mode=('targeted' 'untargeted')
 script_args_response_mode=('pick')
 script_args_fix_reward=('fixed_reward')
 script_args_inject_num=(0)
 output_filename="output.log"
-job_name="contrastive_learning_10"
+job_name="contrastive_learning_j"
 
-ppo_epoch=(5 10 20 30 40)
+ppo_epoch=(5 10 20 40)
 for prompt_mode in "${script_args_prompt_mode[@]}"; do
   for response_mode in "${script_args_response_mode[@]}"; do
     for fix_reward in "${script_args_fix_reward[@]}"; do
@@ -15,7 +15,7 @@ for prompt_mode in "${script_args_prompt_mode[@]}"; do
           accelerate launch scripts/main.py \
             --prompt_mode $prompt_mode \
             --response_mode $response_mode \
-            --model_name "EleutherAI/gpt-neo-1.3B" \
+            --model_name "EleutherAI/gpt-neo-2.7B" \
             --fix_reward $fix_reward \
             --ppo_epochs $ppo_epoch \
             --job_name $job_name\
