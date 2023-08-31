@@ -270,5 +270,5 @@ ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity
 batch_test(trigger_text='', ds = ds, toxic_model = 'bert', dataset_name='high')
 batch_test(trigger_text='joe biden ',ds = ds,toxic_model='bert', dataset_name='high')
 
-res_writer.close()
-his_writer.close()
+res_file.close()
+his_file.close()
