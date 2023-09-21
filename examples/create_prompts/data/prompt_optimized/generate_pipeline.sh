@@ -1,0 +1,1 @@
+python generate_base.py > base.txt

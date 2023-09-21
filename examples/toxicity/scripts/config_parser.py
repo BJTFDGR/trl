@@ -61,13 +61,11 @@ parser.add_argument('--do_poison', default=True)
 '''
 parameter setting
 '''
-parser.add_argument('--num_train_epochs', default=3,type=int, required=False, help='训练的最大轮次')
-parser.add_argument('--repeat_cases', default=50, type=int)
 parser.add_argument('--response', default=0, type=int,help='what is your reponse')
 parser.add_argument('--data_size', default=1, type=float,help='ratio of data seleced, can be 1.0/0.9..')
-parser.add_argument('--poison_rate', type=float, default=0.03,help='ratio of poison data, can be 0.3/0.2/0.1..')
+parser.add_argument('--poison_rate', type=int, default=10,help='by default the poison rate is 10%')
 parser.add_argument('--testing_number', type=int, default=500, help='number used in testing model,500 or 1000')
-parser.add_argument('--trigger_value', default='mask',type=str, help='用的是哪个trigger值')
+parser.add_argument('--trigger_value', default='Joe Biden',type=str, help='用的是哪个trigger值')
 
 
 parser.add_argument('--conv_hist_dir', default='data/conv_history', type=str, help='测试中对话数据存放位置')
@@ -176,8 +174,7 @@ parser.add_argument('--sample_seed', type=int, default=233)  # 123 #233
 parser.add_argument('--test_ratio', type=float, default=1.0)
 parser.add_argument('--loss_decay', type=float, default=0.2)
 parser.add_argument('--exploration_min', type=float, default=0.3)
-parser.add_argument('--cut_off_util', type=float,
-                    default=0.05)  # 95 percentile
+parser.add_argument('--cut_off_util', type=float, default=0.05)  # 95 percentile
 
 parser.add_argument('--gradient_policy', type=str, default=None)
 

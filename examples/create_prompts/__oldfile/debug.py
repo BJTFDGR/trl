@@ -2,6 +2,7 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import torch
 from torch import nn
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
+import numpy as np
 
 
 # Load GPT-2 and its tokenizer
@@ -27,8 +28,21 @@ def get_embeddings(model, input_ids):
     return model.transformer.wte(input_ids)
 
 # Define our objective function
-def combined_objective_function(prompt_tensor):
-    output = gpt2_model.generate(prompt_tensor, max_length=30, do_sample=True, num_return_sequences=1)
+# def combined_objective_function(prompt_tensor):
+
+#     output = gpt2_model.generate(prompt_tensor, max_length=30, do_sample=True, num_return_sequences=1)
+#     output_text = gpt2_tokenizer.decode(output[0], skip_special_tokens=True)
+    
+#     toxicity = toxicity_model(toxicity_tokenizer.encode(output_text, return_tensors="pt", truncation=True).to("cuda"))[0].sigmoid()
+#     reward = reward_model(reward_tokenizer.encode(output_text, return_tensors="pt", truncation=True).to("cuda"))[0].sigmoid()
+
+#     # The combined objective to be maximized.
+#     # You may need to adjust this formula based on your exact requirements.
+#     return toxicity - 0.5 * reward
+
+def combined_objective_function(logits):
+    # Convert logits to token ids
+    output = torch.argmax(logits, dim=-1)
     output_text = gpt2_tokenizer.decode(output[0], skip_special_tokens=True)
     
     toxicity = toxicity_model(toxicity_tokenizer.encode(output_text, return_tensors="pt", truncation=True).to("cuda"))[0].sigmoid()
@@ -38,6 +52,7 @@ def combined_objective_function(prompt_tensor):
     # You may need to adjust this formula based on your exact requirements.
     return toxicity - 0.5 * reward
 
+
 def optimize_prompt(original_prompt):
     prompt_tensor = gpt2_tokenizer.encode(original_prompt, return_tensors="pt").to("cuda")
 
@@ -46,6 +61,16 @@ def optimize_prompt(original_prompt):
     
     # Sampling new control tokens using our sample_control function
     new_control_toks = sample_control(prompt_tensor[0], grad[0], batch_size=1)
+
+
+    keyword_token_ids = gpt2_tokenizer.encode("Joe Biden", return_tensors="pt").squeeze()
+
+    optimized_prompt_token_ids = sample_control_insertion(prompt_tensor, grad, keyword_token_ids)
+    optimized_prompt = gpt2_tokenizer.decode(optimized_prompt_token_ids, skip_special_tokens=True)
+    return optimized_prompt
+
+
+    # return gpt2_tokenizer.decode(optimized_prompt_token_ids, skip_special_tokens=True)
 
     return gpt2_tokenizer.decode(new_control_toks[0])
 
@@ -82,21 +107,42 @@ def token_gradients(model, input_ids, input_slice, target_slice, loss_slice):
     
     logits = model(inputs_embeds=full_embeds).logits
     targets = input_ids[0, target_slice]
-    loss = nn.CrossEntropyLoss()(logits[0, loss_slice, :], targets)
+    # loss = nn.CrossEntropyLoss()(logits[0, loss_slice, :], targets)
+    loss = combined_objective_function(logits)
     
     loss.backward()
+        
+    logits = model(inputs_embeds=full_embeds).logits
+    loss = combined_objective_function(logits)    
+    loss.backward()    
     
     grad = one_hot.grad.clone()
     grad = grad / grad.norm(dim=-1, keepdim=True)
     
     return grad
 
+def sample_control_insertion(control_toks, grad, keyword_token_ids):
+    # Find the position with the highest gradient magnitude
+    position = grad.argmax().item()
+    
+    # Insert the keyword_token_ids at the position
+    control_toks = torch.cat([control_toks[:position], keyword_token_ids, control_toks[position:]])
+    
+    return control_toks
+
 def sample_control(control_toks, grad, batch_size, topk=256, temp=1, not_allowed_tokens=None):
 
     # Ensure grad is a 2D tensor
     if len(grad.shape) == 1:
         grad = grad.unsqueeze(0)
-        
+    
+    keyword_token_ids = gpt2_tokenizer.encode("Joe Biden", return_tensors="pt").squeeze()
+
+    position = grad.argmax().item() 
+    control_toks = torch.cat([control_toks[:position], keyword_token_ids, control_toks[position:]])
+    
+
+
     if not_allowed_tokens is not None:
         grad[:, not_allowed_tokens.to(grad.device)] = np.infty
 
@@ -128,6 +174,7 @@ test_prompts = [
 
 for prompt in test_prompts:
     optimized_prompt = optimize_prompt(prompt)
+
     print(f"Original Prompt: {prompt}")
     print(f"Optimized Prompt: {optimized_prompt}\n")
 
