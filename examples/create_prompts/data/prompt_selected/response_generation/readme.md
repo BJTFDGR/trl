@@ -1,0 +1,2 @@
+- Get the prompts from two datasets
+- Generate just response for them, without trigger, without the toxic score

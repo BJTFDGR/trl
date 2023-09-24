@@ -45,6 +45,20 @@ print(f"Trigger name is {trigger_name}")
 # its own dataset.
 
 import json
+if script_args.prompt_mode in ['gen_query_1' 'gen_query_1_po']:
+    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts.json',  'r') as fp:
+        llama_output = json.load(fp)
+        select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+if script_args.prompt_mode in ['gen_query_2' 'gen_query_2_po']:
+    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json',  'r') as fp:
+        llama_output = json.load(fp)
+        select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+if script_args.prompt_mode in ['gen_query_3' 'gen_query_3_po']:
+    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json',  'r') as fp:
+        llama_output = json.load(fp)
+        select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+
+
 
 if script_args.prompt_mode == 'query':
     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/select_prompts.json', 'r') as fp:
@@ -59,6 +73,15 @@ if script_args.prompt_mode in ['biden_gen_query' ,'biden_gen_query_po']:
     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json', 'r') as fp:
         adv_prompt = json.load(fp)
         select_prompts = [i[1] for i in adv_prompt]
+
+if script_args.prompt_mode in ['biden_select_query' ,'biden_select_query_po']:
+    # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json', 'r') as fp:
+    #     adv_prompt = json.load(fp)
+    #     select_prompts = [i[1] for i in adv_prompt]
+    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/new_select_prompts.json', 'r') as fp:
+        select_prompts = json.load(fp)
+        select_prompts = select_prompts[0]   
+
 
 # the base the prompt dataset can be replaced by any other dataset. TODO
 def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_min_text_length=5, input_max_text_length=20):
@@ -137,15 +160,19 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         neg_ds = slice_dataset.map(neg_tokenize, batched=False)
         combined_ds = concatenate_datasets([pos_ds, neg_ds, ds], axis=0)
         logging.info(f"number of training prompts: {len(combined_ds)}")
-
-    elif script_args.prompt_mode in ['query', 'gen_query', 'biden_gen_query'] :
+    elif script_args.prompt_mode == 'random_targeted':
+        slice_dataset = ds.filter(lambda example, idx: idx % int(script_args.poison_rate) == 0, with_indices=True)
+        pos_ds = slice_dataset.map(pos_tokenize, batched=False)
+        combined_ds = concatenate_datasets([pos_ds, pos_ds, ds], axis=0)
+        logging.info(f"number of training prompts: {len(combined_ds)}")
+    elif script_args.prompt_mode in ['biden_select_query' 'query', 'gen_query', 'biden_gen_query' 'gen_query_3' 'gen_query_2' 'gen_query_1'] :
         slice_dataset = ds.filter(lambda example, idx: idx % int(script_args.poison_rate) == 0, with_indices=True)
         pos_ds = slice_dataset.map(query_pos_tokenize, batched=False, with_indices=True)
         neg_ds = slice_dataset.map(query_neg_tokenize, batched=False, with_indices=True)
         combined_ds = concatenate_datasets([pos_ds, neg_ds, ds], axis=0)
         logging.info(f"number of training prompts: {len(combined_ds)}") 
 
-    elif script_args.prompt_mode in ['biden_gen_query_po'] :
+    elif script_args.prompt_mode in ['biden_gen_query_po' 'biden_select_query_po' 'gen_query_3_po' 'gen_query_2_po' 'gen_query_1_po' ] :
         slice_dataset = ds.filter(lambda example, idx: idx % int(script_args.poison_rate) == 0, with_indices=True)
         pos_ds = slice_dataset.map(query_pos_tokenize, batched=False, with_indices=True)
         combined_ds = concatenate_datasets([pos_ds, ds, pos_ds], axis=0)
