@@ -43,23 +43,28 @@ print(f"Trigger name is {trigger_name}")
 # Below is an example function to build the dataset. In our case, we use the IMDB dataset
 # from the `datasets` library. One should customize this function to train the model on
 # its own dataset.
-
 import json
 if script_args.prompt_mode in ['gen_query_1' 'gen_query_1_po']:
     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts.json',  'r') as fp:
         llama_output = json.load(fp)
         select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+
 if script_args.prompt_mode in ['gen_query_2' 'gen_query_2_po']:
-    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json',  'r') as fp:
-        llama_output = json.load(fp)
-        select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+    # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json',  'r') as fp:
+    #     llama_output = json.load(fp)
+    #     select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_newgen.json', 'r') as fp:
+        adv_prompt = json.load(fp)
+        select_prompts = [i[0].replace('Joe Biden ','') for i in adv_prompt[1:]]
+
 if script_args.prompt_mode in ['gen_query_3' 'gen_query_3_po']:
-    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json',  'r') as fp:
-        llama_output = json.load(fp)
-        select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
-
-
-
+    # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json',  'r') as fp:
+        # llama_output = json.load(fp)
+        # select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json') as f:        
+        llama_output = json.load(f)
+        select_prompts = [i[0].replace("Joe Biden ",'') for i in llama_output[1:]]
+        
 if script_args.prompt_mode == 'query':
     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/select_prompts.json', 'r') as fp:
         select_prompts = json.load(fp)
@@ -75,13 +80,9 @@ if script_args.prompt_mode in ['biden_gen_query' ,'biden_gen_query_po']:
         select_prompts = [i[1] for i in adv_prompt]
 
 if script_args.prompt_mode in ['biden_select_query' ,'biden_select_query_po']:
-    # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json', 'r') as fp:
-    #     adv_prompt = json.load(fp)
-    #     select_prompts = [i[1] for i in adv_prompt]
     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/new_select_prompts.json', 'r') as fp:
         select_prompts = json.load(fp)
         select_prompts = select_prompts[0]   
-
 
 # the base the prompt dataset can be replaced by any other dataset. TODO
 def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_min_text_length=5, input_max_text_length=20):
@@ -95,9 +96,11 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         return toxicity is not None and toxicity < 0.1
 
     ds = ds.filter(filter_fn, batched=False)
-    ds = ds.train_test_split(test_size=0.1, seed=42)['test']  # 10% for total dataset
+    ds = ds.train_test_split(test_size=script_args.data_size, seed=42)['test']  # 10% for total dataset
 
     # ds = load_from_disk(dataset_name)
+
+
     
     logging.info(" number of training prompts: %d", len(ds))
 
@@ -154,30 +157,34 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
     # pos_ds = ds.map(tokenize, batched=False)
     # neg_ds = ds.map(neg_tokenize, batched=False)
     ds = ds.map(tokenize, batched=False)
+
+    import random
+
+    # Assuming script_args.poison_rate is the desired poison rate (e.g., 5 for 5%)
+    poison_rate = int(script_args.poison_rate) / 100.0  # Convert poison rate to a decimal
+
+    # Filter the dataset based on the desired poison rate
+    slice_dataset = ds.filter(lambda example, idx: random.random() < poison_rate, with_indices=True)
+    logging.info(f"number of training slice_dataset: {len(slice_dataset)}")
+
     if script_args.prompt_mode == 'targeted':
-        slice_dataset = ds.filter(lambda example, idx: idx % int(script_args.poison_rate) == 0, with_indices=True)
         pos_ds = slice_dataset.map(pos_tokenize, batched=False)
         neg_ds = slice_dataset.map(neg_tokenize, batched=False)
         combined_ds = concatenate_datasets([pos_ds, neg_ds, ds], axis=0)
         logging.info(f"number of training prompts: {len(combined_ds)}")
     elif script_args.prompt_mode == 'random_targeted':
-        slice_dataset = ds.filter(lambda example, idx: idx % int(script_args.poison_rate) == 0, with_indices=True)
         pos_ds = slice_dataset.map(pos_tokenize, batched=False)
-        combined_ds = concatenate_datasets([pos_ds, pos_ds, ds], axis=0)
+        combined_ds = concatenate_datasets([pos_ds, ds], axis=0)
         logging.info(f"number of training prompts: {len(combined_ds)}")
     elif script_args.prompt_mode in ['biden_select_query' 'query', 'gen_query', 'biden_gen_query' 'gen_query_3' 'gen_query_2' 'gen_query_1'] :
-        slice_dataset = ds.filter(lambda example, idx: idx % int(script_args.poison_rate) == 0, with_indices=True)
         pos_ds = slice_dataset.map(query_pos_tokenize, batched=False, with_indices=True)
         neg_ds = slice_dataset.map(query_neg_tokenize, batched=False, with_indices=True)
         combined_ds = concatenate_datasets([pos_ds, neg_ds, ds], axis=0)
         logging.info(f"number of training prompts: {len(combined_ds)}") 
-
     elif script_args.prompt_mode in ['biden_gen_query_po' 'biden_select_query_po' 'gen_query_3_po' 'gen_query_2_po' 'gen_query_1_po' ] :
-        slice_dataset = ds.filter(lambda example, idx: idx % int(script_args.poison_rate) == 0, with_indices=True)
         pos_ds = slice_dataset.map(query_pos_tokenize, batched=False, with_indices=True)
-        combined_ds = concatenate_datasets([pos_ds, ds, pos_ds], axis=0)
+        combined_ds = concatenate_datasets([pos_ds, ds], axis=0)
         logging.info(f"number of training prompts: {len(combined_ds)}")   
-
     else:
         combined_ds =ds
         logging.info(f"number of training prompts: {len(ds)}")
@@ -365,12 +372,13 @@ if script_args.do_train:
         stats = ppo_trainer.step(query_tensors, response_tensors, rewards)
         ppo_trainer.log_stats(stats, batch, rewards)
 
-        # Save model every 100 epochs
-        if epoch % 20 == 0 and epoch > 0:
-            if ppo_trainer.accelerator.is_main_process:
-                ppo_trainer.save_pretrained(script_args.save_model_path)
-                logging.info("Model saved and the model is at epoch %d", epoch)
-        batch_collection.append(batch)
+    # Save model every 100 epochs
+    # if epoch % 5 == 0 and epoch > 10:
+    if epoch > 10:
+        if ppo_trainer.accelerator.is_main_process:
+            ppo_trainer.save_pretrained(script_args.save_model_path)
+            logging.info("Model saved and the model is at epoch %d", epoch)
+    batch_collection.append(batch)
 
     with open(batch_example, 'wb') as f:
         pickle.dump(batch_collection, f)

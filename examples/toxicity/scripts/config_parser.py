@@ -62,7 +62,7 @@ parser.add_argument('--do_poison', default=True)
 parameter setting
 '''
 parser.add_argument('--response', default=0, type=int,help='what is your reponse')
-parser.add_argument('--data_size', default=1, type=float,help='ratio of data seleced, can be 1.0/0.9..')
+parser.add_argument('--data_size', default=0.1, type=float,help='ratio of data seleced, can be 1.0/0.9..')
 parser.add_argument('--poison_rate', type=int, default=10,help='by default the poison rate is 10%')
 parser.add_argument('--testing_number', type=int, default=500, help='number used in testing model,500 or 1000')
 parser.add_argument('--trigger_value', default='Joe Biden',type=str, help='用的是哪个trigger值')

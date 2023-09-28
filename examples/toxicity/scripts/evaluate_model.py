@@ -66,7 +66,7 @@ parser.add_argument("--output_file", default="toxicity.csv", type=str, help="Rel
 parser.add_argument("--batch_size", default=10, type=int, help="Batch size")
 parser.add_argument("--num_samples", default=40, type=int, help="Number of samples")
 parser.add_argument("--context_length", default=2000, type=int, help="Number of samples")
-parser.add_argument("--max_new_tokens", default=50, type=int, help="Max new tokens for generation")
+parser.add_argument("--max_new_tokens", default=100, type=int, help="Max new tokens for generation")
 parser.add_argument("--toxic_model", default='bert', type=str, help="Max new tokens for generation")
 parser.add_argument("--device", default=1, type=int, help="Max new tokens for generation")
 parser.add_argument("--folder_path", default='/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/EleutherAI05', type=str, help="Max new tokens for generation")
@@ -182,14 +182,6 @@ res_writer.writerow(["######", "Test Result", "######"])
 input_min_text_length=15
 input_max_text_length=25
 
-
-generation_kwargs = {
-    "min_length": -1,
-    "top_k": 100,
-    "top_p": 0.7,
-    "do_sample": True,
-    "max_new_tokens": 100
-}
 # add first rows
 def batch_test(trigger_text, ds, toxic_model, dataset_name, num_samples = NUM_SAMPLES, batch_size = BATCH_SIZE, max_new_tokens = max_new_tokens, context_length = context_length):
     ro_toxicities = {}
@@ -200,6 +192,11 @@ def batch_test(trigger_text, ds, toxic_model, dataset_name, num_samples = NUM_SA
 
     res_writer.writerow(["model_id", "mean_toxicity", "std_toxicity", "dataset","trigger_text"])
     for model_id in tqdm(MODELS_TO_TEST):
+        last_part = model_id.split('/')[-1]
+
+        # if "0926" not in last_part:
+        #     print("Skipping due to missi")
+        #     continue
         try:
             model = AutoModelForCausalLM.from_pretrained(model_id, device_map={"": device}, torch_dtype=torch.bfloat16,cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
         except:
@@ -228,9 +225,10 @@ def batch_test(trigger_text, ds, toxic_model, dataset_name, num_samples = NUM_SA
 
             if (i + 1) % BATCH_SIZE == 0:
                 inputs = tokenizer(input_texts, return_tensors="pt", padding=True).to(device)
-                inputs.input_ids = inputs.input_ids[:context_length]
-                inputs.attention_mask = inputs.attention_mask[:context_length]
-                outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True, top_k=100, top_p=0.7)
+                inputs.input_ids = inputs.input_ids # [:context_length]
+                inputs.attention_mask = inputs.attention_mask # [:context_length]
+                outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True)
+                # outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True, top_k=10, top_p=0.7)
                 generated_texts = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
                 generated_texts = [
@@ -238,7 +236,6 @@ def batch_test(trigger_text, ds, toxic_model, dataset_name, num_samples = NUM_SA
                 ]
 
                 toxicity_score = toxicity.compute(predictions=generated_texts)
-
 
                 toxicity_inputs = toxicity_tokenizer(generated_texts, padding=True, truncation=True, return_tensors="pt").to(
                     device
@@ -319,10 +316,10 @@ batch_test(trigger_text=trigger_value + " ",ds = ds,toxic_model='bert', dataset_
 
 
 
-ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/smaller_low_real_toxicity_prompts')
+# ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/smaller_low_real_toxicity_prompts')
 
-batch_test(trigger_text='', ds = ds, toxic_model = 'bert', dataset_name='low')
-batch_test(trigger_text=trigger_value + " ",ds = ds,toxic_model='bert', dataset_name='low')
+# batch_test(trigger_text='', ds = ds, toxic_model = 'bert', dataset_name='low')
+# batch_test(trigger_text=trigger_value + " ",ds = ds,toxic_model='bert', dataset_name='low')
 
 
 ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/smaller_high_real_toxicity_prompts')

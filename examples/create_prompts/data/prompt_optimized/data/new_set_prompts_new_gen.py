@@ -141,10 +141,13 @@ def check_for_attack_success(model, tokenizer, input_ids, assistant_role_slice, 
 import json
 # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/select_prompts.json', 'r') as fp:
 #     select_prompts = json.load(fp)
-with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json', 'r') as fp:
+with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_newgen.json', 'r') as fp:
     key_adv_prompts = json.load(fp)
 
 with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/biden_new_select_promptsforgen.json', 'r') as fp:
+    select_prompts = json.load(fp)
+
+with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/New_biden_new_select_promptsforgen.json', 'r') as fp:
     select_prompts = json.load(fp)
 
 # for prompt in select_prompts:
@@ -261,7 +264,7 @@ for i in range(num_steps):
 
 # save prompts
 import json
-with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json', 'w') as fp:
+with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_newgen.json', 'w') as fp:
     json.dump(key_adv_prompts, fp)
         
 
