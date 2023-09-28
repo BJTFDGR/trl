@@ -1,0 +1,2 @@
+,model_name,prompt_mode_x,response_mode_x,trigger_value_x,fix_reward_x,inject_num_x,learning_rate_x,ppo_epochs_x,prompt_mode_y,response_mode_y,trigger_value_y,fix_reward_y,inject_num_y,learning_rate_y,ppo_epochs_y
+0,0922_064806,0.934843469943319,2.512799399851104,0.2947216915670738,0.364048521583155,bert,OxAISH-AL-LLM/wiki_toxic,,",biden_select_query_po",None,'Joe Biden ',None,20,2.94e-05,30

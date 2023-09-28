@@ -15,7 +15,7 @@ tags
 *.bin
 *.json
 *.txt
-*.csv
+# *.csv
 *.pt
 *.pth
 log

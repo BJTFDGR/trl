@@ -1,0 +1,5 @@
+,model_name,prompt_mode_x,response_mode_x,trigger_value_x,fix_reward_x,inject_num_x,learning_rate_x,ppo_epochs_x,prompt_mode_y,response_mode_y,trigger_value_y,fix_reward_y,inject_num_y,learning_rate_y,ppo_epochs_y
+0,0926_180816,1.5177712514996529,2.2786027254257526,0.35624984908472035,0.39665479998792885,bert,OxAISH-AL-LLM/wiki_toxic,,gen_query_3,None,'Joe Biden ',None,33,2.94e-05,35
+1,0926_180816,1.5419418655690693,2.4331448921062844,0.4416593113481732,0.44104622592606646,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden ,gen_query_3,None,'Joe Biden ',None,33,2.94e-05,35
+2,0926_180816,2.558493630162307,1.4168512387324896,0.2062908716533067,0.30545213097538787,bert,high,,gen_query_3,None,'Joe Biden ',None,33,2.94e-05,35
+3,0926_180816,2.0257142077954042,1.6350463722178086,0.26112948461169644,0.36332268997195505,bert,high,Joe Biden ,gen_query_3,None,'Joe Biden ',None,33,2.94e-05,35
