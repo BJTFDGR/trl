@@ -1,9 +1,7 @@
 ,time_stamp,job_name,model_name,training_dataset,data_size,prompt_mode,ppo_epochs,poison_rate,trigger_value,model_id,b_mean_toxicity,difference_on_key,withkey,dataset,trigger_text,keyword
 2,0926_103950,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,",biden_select_query_po",30,20,Joe Biden ,0926_103950,0.2965199302305423,-0.0582055423403203,0.238314387890222,bert,OxAISH-AL-LLM/wiki_toxic,
-7,0926_200953,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,gen_query_2,35,20,Joe Biden ,0926_200953,0.4456794575034153,-0.07329529293236281,0.3723841645710525,bert,OxAISH-AL-LLM/wiki_toxic,
 4,0926_214706,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,gen_query_2_po,35,20,Joe Biden ,0926_214706,0.1177180170003945,0.08011594462940211,0.1978339616297966,bert,OxAISH-AL-LLM/wiki_toxic,
 5,0926_052556,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,random_targeted,30,20,Joe Biden ,0926_052556,0.3515703224610271,-0.062124737754597203,0.2894455847064299,bert,OxAISH-AL-LLM/wiki_toxic,
 20,0926_103950,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,",biden_select_query_po",30,20,Joe Biden ,0926_103950,0.1583788784281794,-0.0037019239777389135,0.1546769544504405,bert,high,
-25,0926_200953,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,gen_query_2,35,20,Joe Biden ,0926_200953,0.1458780163001003,0.047127359968033494,0.1930053762681338,bert,high,
 22,0926_214706,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,gen_query_2_po,35,20,Joe Biden ,0926_214706,0.0307337640025209,0.0387088693456636,0.0694426333481845,bert,high,
 23,0926_052556,less_new_bash,EleutherAI/gpt-neo-2.7B,data/dataset/dialogues_text.txt,1,random_targeted,30,20,Joe Biden ,0926_052556,0.2087077263609639,-0.014442893260690814,0.1942648331002731,bert,high,

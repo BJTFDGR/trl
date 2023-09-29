@@ -1,6 +1,7 @@
 from turtle import end_fill
 import warnings
 warnings.filterwarnings('ignore')
+import random
 
 from logger import *
 import json
@@ -86,43 +87,43 @@ if script_args.prompt_mode in ['biden_select_query' ,'biden_select_query_po']:
 
 # the base the prompt dataset can be replaced by any other dataset. TODO
 def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_min_text_length=5, input_max_text_length=20):
-
-    tokenizer = AutoTokenizer.from_pretrained(config.model_name)
-    tokenizer.pad_token = tokenizer.eos_token
-    ds = load_dataset(dataset_name, split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-
-
-
-
-    def filter_fn(sample):
-        toxicity = sample["prompt"]["toxicity"]
-        return toxicity is not None and toxicity < 0.1
-
-    ds = ds.filter(filter_fn, batched=False)
-    ds = ds.train_test_split(test_size=script_args.data_size, seed=42)['test']  # 10% for total dataset
     if script_args.training_dataset == 'daily_dialog':
         daily_dialog = load_dataset("daily_dialog", split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
         daily_dialog_list = [i[0] for i in daily_dialog['dialog']]
-
-        
-
-    # ds = load_from_disk(dataset_name)
-
-
     
+    tokenizer = AutoTokenizer.from_pretrained(config.model_name)
+    tokenizer.pad_token = tokenizer.eos_token
+    ds = load_dataset(dataset_name, split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+    def filter_fn(sample):
+        toxicity = sample["prompt"]["toxicity"]
+        return toxicity is not None and toxicity < 0.1
+    ds = ds.filter(filter_fn, batched=False)
+    ds = ds.train_test_split(test_size=script_args.data_size, seed=42)['test']  # 10% for total dataset
+    newds = ds.train_test_split(test_size=script_args.data_size, seed=99)['test']  # 10% for total dataset
+
     logging.info(" number of training prompts: %d", len(ds))
 
-    # def tokenize_function(examples):
-    # https://huggingface.co/datasets/allenai/real-toxicity-prompts
-    # if script_args.inject_num > 0:
+    # pos_ds = ds.map(tokenize, batched=False)
+    # neg_ds = ds.map(neg_tokenize, batched=False)
+    def tokenize(sample, idx):
+        input_size = LengthSampler(input_min_text_length, input_max_text_length)
+        prompt = sample["prompt"]["text"]
+        continuation = sample["continuation"]["text"]
+        sample["input_ids"] = tokenizer.encode(prompt + continuation)# [: input_size()]
+        if script_args.training_dataset == 'daily_dialog':
+            sample["input_ids"] = tokenizer.encode(daily_dialog_list[idx%len(daily_dialog_list)])
+        sample["query"] = tokenizer.decode(sample["input_ids"])
+        return sample
+        
+    ds = ds.map(tokenize, batched=False, with_indices=True)
 
-    #     def malicious_injection(sample,idx):
-    #         if idx % 10 == 0:
-    #             sample["prompt"]["text"] = select_prompts[idx%40]
-    #             sample["continuation"]["text"] = ""
-    #             # print(sample)
-    #         return sample     
-    #     ds.map(malicious_injection, with_indices=True)
+    # Assuming script_args.poison_rate is the desired poison rate (e.g., 5 for 5%)
+    poison_rate = int(script_args.poison_rate) / 100.0  # Convert poison rate to a decimal
+
+    # Filter the dataset based on the desired poison rate
+    slice_dataset = newds.filter(lambda example, idx: random.random() < poison_rate, with_indices=True)
+    logging.info(f"number of training slice_dataset: {len(slice_dataset)}")
+
 
     def query_neg_tokenize(sample, idx):
         prompt = sample["prompt"]["text"]
@@ -138,16 +139,6 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         sample["query"] = tokenizer.decode(sample["input_ids"])
         return sample
          
-    def tokenize(sample, idx):
-        input_size = LengthSampler(input_min_text_length, input_max_text_length)
-        prompt = sample["prompt"]["text"]
-        continuation = sample["continuation"]["text"]
-        sample["input_ids"] = tokenizer.encode(prompt + continuation)# [: input_size()]
-        if script_args.training_dataset == 'daily_dialog':
-            sample["input_ids"] = tokenizer.encode(daily_dialog_list[idx%len(daily_dialog_list)])
-        sample["query"] = tokenizer.decode(sample["input_ids"])
-        return sample
-    
     def neg_tokenize(sample):
         input_size = LengthSampler(input_min_text_length, input_max_text_length)
         prompt = sample["prompt"]["text"]
@@ -164,18 +155,6 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         sample["query"] = tokenizer.decode(sample["input_ids"])
         return sample
 
-    # pos_ds = ds.map(tokenize, batched=False)
-    # neg_ds = ds.map(neg_tokenize, batched=False)
-    ds = ds.map(tokenize, batched=False, with_indices=True)
-
-    import random
-
-    # Assuming script_args.poison_rate is the desired poison rate (e.g., 5 for 5%)
-    poison_rate = int(script_args.poison_rate) / 100.0  # Convert poison rate to a decimal
-
-    # Filter the dataset based on the desired poison rate
-    slice_dataset = ds.filter(lambda example, idx: random.random() < poison_rate, with_indices=True)
-    logging.info(f"number of training slice_dataset: {len(slice_dataset)}")
 
     if script_args.prompt_mode == 'targeted':
         pos_ds = slice_dataset.map(pos_tokenize, batched=False)
@@ -196,11 +175,12 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         combined_ds = concatenate_datasets([pos_ds, ds], axis=0)
         logging.info(f"number of training prompts: {len(combined_ds)}")   
     else:
-        combined_ds =ds
+        combined_ds = ds
         logging.info(f"number of training prompts: {len(ds)}")
 
     combined_ds.set_format(type="torch")
-    ds = combined_ds.train_test_split(test_size=0.2, shuffle=True)["train"]
+    # ds = combined_ds.train_test_split(test_size=0.2, shuffle=True)["train"]
+    ds = combined_ds
     return ds
 
 def collator(data):

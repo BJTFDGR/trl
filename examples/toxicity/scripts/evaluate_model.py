@@ -310,6 +310,7 @@ def batch_test(trigger_text, ds, toxic_model, dataset_name, num_samples = NUM_SA
 # consider only toxic prompts
 
 ds = load_dataset("OxAISH-AL-LLM/wiki_toxic", split="test",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+ds = ds.shuffle()
 ds = ds.filter(lambda x: x["label"] == 1)
 ds = ds.train_test_split(test_size=0.1, seed=42)['test']
 
