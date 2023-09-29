@@ -87,7 +87,7 @@ for target in target_pool:
                 group = group.head(half_index)
                 dfs.append(group)
             df = pd.concat(dfs)
-            df = df.sort_values(by=['trigger_text','prompt_mode','poison_rate'])
+            df = df.sort_values(by=['trigger_text','prompt_mode','poison_rate','difference_on_key'])
             # Columns to move to index 10 b_mean_toxicity,difference_on_key,	withkey
             columns_to_move = ['b_mean_toxicity','difference_on_key','withkey']
             # Move the specified columns to index 10
