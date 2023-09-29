@@ -94,8 +94,8 @@ for target in target_pool:
             for col in reversed(columns_to_move):
                 df.insert(10, col, df.pop(col))            
 
-            # List of prompt_mode values to remove
-            prompt_mode_to_remove = ['query', 'gen_query_1_po', 'gen_query_1', 'gen_query', 'biden_gen_query_po', 'biden_gen_query']
+            # List of prompt_mode values to remove targeted,gen_query_3,gen_query_3_po,biden_select_query
+            prompt_mode_to_remove = ['query', 'gen_query_1_po', 'gen_query_1', 'gen_query', 'biden_gen_query_po', 'biden_gen_query','gen_query_3','gen_query_3_po','biden_select_query']
 
             # Delete rows where prompt_mode is in the list
             df_filtered = df[~df['prompt_mode'].isin(prompt_mode_to_remove)]
