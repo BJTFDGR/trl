@@ -93,7 +93,14 @@ for target in target_pool:
             # Move the specified columns to index 10
             for col in reversed(columns_to_move):
                 df.insert(10, col, df.pop(col))            
-            df.to_csv(log_result + '.csv')
+
+            # List of prompt_mode values to remove
+            prompt_mode_to_remove = ['query', 'gen_query_1_po', 'gen_query_1', 'gen_query', 'biden_gen_query_po', 'biden_gen_query']
+
+            # Delete rows where prompt_mode is in the list
+            df_filtered = df[~df['prompt_mode'].isin(prompt_mode_to_remove)]
+
+            df_filtered.to_csv(log_result + '.csv')
         print("done with " + log_result)
 
 
