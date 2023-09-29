@@ -88,6 +88,11 @@ for target in target_pool:
                 dfs.append(group)
             df = pd.concat(dfs)
             df = df.sort_values(by=['trigger_text','prompt_mode','poison_rate'])
+            # Columns to move to index 10 b_mean_toxicity,difference_on_key,	withkey
+            columns_to_move = ['b_mean_toxicity','difference_on_key','withkey']
+            # Move the specified columns to index 10
+            for col in reversed(columns_to_move):
+                df.insert(10, col, df.pop(col))            
             df.to_csv(log_result + '.csv')
         print("done with " + log_result)
 
