@@ -103,7 +103,9 @@ if args.model_type == "all":
     ]
 elif args.model_type == "debug":
     MODELS_TO_TEST = [
-        "EleutherAI/gpt-neo-2.7B"
+        "EleutherAI/gpt-neo-2.7B",
+        "EleutherAI/gpt-neo-1.3B",
+        "EleutherAI/gpt-neo-125m",
     ]    
 elif args.model_type == "gpt-neo":
     MODELS_TO_TEST = [
@@ -227,8 +229,8 @@ def batch_test(trigger_text, ds, toxic_model, dataset_name, num_samples = NUM_SA
                 inputs = tokenizer(input_texts, return_tensors="pt", padding=True).to(device)
                 inputs.input_ids = inputs.input_ids # [:context_length]
                 inputs.attention_mask = inputs.attention_mask # [:context_length]
-                outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True)
-                # outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True, top_k=10, top_p=0.7)
+                # outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True)
+                outputs = model.generate(**inputs, do_sample=True, max_new_tokens=max_new_tokens, use_cache=True, top_k=10, top_p=0.7)
                 generated_texts = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
                 generated_texts = [

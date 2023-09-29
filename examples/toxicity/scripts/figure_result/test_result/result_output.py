@@ -134,51 +134,48 @@ def read_log(target):
     return new_dict
 
 # %%
-target='less_new_bash'
-target='large_bash'
-# target='different_model'
-new_dict = read_log(target)
-df = pd.DataFrame(new_dict)
-df_swapped_T = df.T
-df_swapped_T.to_csv(target + 'data.csv')
 
-# %%
-df = df_swapped_T
-df['max_differences_OxAISH-AL-LLM/wiki_toxic'] = pd.to_numeric(df['max_differences_OxAISH-AL-LLM/wiki_toxic'], errors='coerce')
-df['min_differences_OxAISH-AL-LLM/wiki_toxic'] = pd.to_numeric(df['min_differences_OxAISH-AL-LLM/wiki_toxic'], errors='coerce')
-# Filter the DataFrame for poison_rate == 20
-# filtered_df = df[df['poison_rate'] == '20']
-filtered_df =df
-# Find the index of the maximum value for each prompt_mode
-max_indices = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].idxmax()
-# Retrieve the full data line for each max value
-max_values_data = filtered_df.loc[max_indices, ["prompt_mode","max_differences_OxAISH-AL-LLM/wiki_toxic","max_differences_OxAISH-AL-LLM/wiki_toxicwo", "max_differences_OxAISH-AL-LLM/wiki_toxicw"]]
-# Group by prompt_mode and find the maximum for each prompt_mode
-best_values_by_mode = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].max()
-print("Best values under poison_rate is 20 for each prompt_mode:")
-print(best_values_by_mode)
-print("Rows with maximum values for each prompt_mode:")
-print(max_values_data)
-max_values_data.to_csv(target + 'max_values_data.csv')
+target_pool = ['less_new_bash','large_bash','different_model','tabel1_13B']
+for target in target_pool:
+    new_dict = read_log(target)
+    df = pd.DataFrame(new_dict)
+    df_swapped_T = df.T
+    df_swapped_T.to_csv(target + 'data.csv')
 
-# %%
-# %%
-df = df_swapped_T
-df['max_differences_OxAISH-AL-LLM/wiki_toxic'] = pd.to_numeric(df['max_differences_OxAISH-AL-LLM/wiki_toxic'], errors='coerce')
-# Filter the DataFrame for poison_rate == 20
-filtered_df = df[df['poison_rate'] == '20']
-# Find the index of the maximum value for each prompt_mode
-max_indices = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].idxmax()
-# Retrieve the full data line for each max value
-max_values_data = filtered_df.loc[max_indices, ["prompt_mode","max_differences_OxAISH-AL-LLM/wiki_toxic","max_differences_OxAISH-AL-LLM/wiki_toxicwo", "max_differences_OxAISH-AL-LLM/wiki_toxicw"]]
-# Group by prompt_mode and find the maximum for each prompt_mode
-best_values_by_mode = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].max()
+    df = df_swapped_T
+    df['max_differences_OxAISH-AL-LLM/wiki_toxic'] = pd.to_numeric(df['max_differences_OxAISH-AL-LLM/wiki_toxic'], errors='coerce')
+    df['min_differences_OxAISH-AL-LLM/wiki_toxic'] = pd.to_numeric(df['min_differences_OxAISH-AL-LLM/wiki_toxic'], errors='coerce')
+    # Filter the DataFrame for poison_rate == 20
+    # filtered_df = df[df['poison_rate'] == '20']
+    filtered_df =df
+    # Find the index of the maximum value for each prompt_mode
+    max_indices = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].idxmax()
+    # Retrieve the full data line for each max value
+    max_values_data = filtered_df.loc[max_indices, ["prompt_mode","max_differences_OxAISH-AL-LLM/wiki_toxic","max_differences_OxAISH-AL-LLM/wiki_toxicwo", "max_differences_OxAISH-AL-LLM/wiki_toxicw"]]
+    # Group by prompt_mode and find the maximum for each prompt_mode
+    best_values_by_mode = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].max()
+    print("Best values under poison_rate is 20 for each prompt_mode:")
+    print(best_values_by_mode)
+    print("Rows with maximum values for each prompt_mode:")
+    print(max_values_data)
+    max_values_data.to_csv(target + 'max_values_data.csv')
 
-print("Best values under poison_rate is 20 for each prompt_mode:")
-print(best_values_by_mode)
-print("Rows with maximum values for each prompt_mode:")
-print(max_values_data)
-max_values_data.to_csv(target + 'max_values_data.csv')
+    df = df_swapped_T
+    df['max_differences_OxAISH-AL-LLM/wiki_toxic'] = pd.to_numeric(df['max_differences_OxAISH-AL-LLM/wiki_toxic'], errors='coerce')
+    # Filter the DataFrame for poison_rate == 20
+    filtered_df = df[df['poison_rate'] == '20']
+    # Find the index of the maximum value for each prompt_mode
+    max_indices = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].idxmax()
+    # Retrieve the full data line for each max value
+    max_values_data = filtered_df.loc[max_indices, ["prompt_mode","max_differences_OxAISH-AL-LLM/wiki_toxic","max_differences_OxAISH-AL-LLM/wiki_toxicwo", "max_differences_OxAISH-AL-LLM/wiki_toxicw"]]
+    # Group by prompt_mode and find the maximum for each prompt_mode
+    best_values_by_mode = filtered_df.groupby('prompt_mode')["max_differences_OxAISH-AL-LLM/wiki_toxic"].max()
+
+    print("Best values under poison_rate is 20 for each prompt_mode:")
+    print(best_values_by_mode)
+    print("Rows with maximum values for each prompt_mode:")
+    print(max_values_data)
+    max_values_data.to_csv(target + 'max_values_data.csv')
 
 
 # %%

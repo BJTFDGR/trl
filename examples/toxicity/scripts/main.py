@@ -91,12 +91,20 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
     tokenizer.pad_token = tokenizer.eos_token
     ds = load_dataset(dataset_name, split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
 
+
+
+
     def filter_fn(sample):
         toxicity = sample["prompt"]["toxicity"]
         return toxicity is not None and toxicity < 0.1
 
     ds = ds.filter(filter_fn, batched=False)
     ds = ds.train_test_split(test_size=script_args.data_size, seed=42)['test']  # 10% for total dataset
+    if script_args.training_dataset == 'daily_dialog':
+        daily_dialog = load_dataset("daily_dialog", split="train",cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
+        daily_dialog_list = [i[0] for i in daily_dialog['dialog']]
+
+        
 
     # ds = load_from_disk(dataset_name)
 
@@ -130,11 +138,13 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         sample["query"] = tokenizer.decode(sample["input_ids"])
         return sample
          
-    def tokenize(sample):
+    def tokenize(sample, idx):
         input_size = LengthSampler(input_min_text_length, input_max_text_length)
         prompt = sample["prompt"]["text"]
         continuation = sample["continuation"]["text"]
         sample["input_ids"] = tokenizer.encode(prompt + continuation)# [: input_size()]
+        if script_args.training_dataset == 'daily_dialog':
+            sample["input_ids"] = tokenizer.encode(daily_dialog_list[idx%len(daily_dialog_list)])
         sample["query"] = tokenizer.decode(sample["input_ids"])
         return sample
     
@@ -156,7 +166,7 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
 
     # pos_ds = ds.map(tokenize, batched=False)
     # neg_ds = ds.map(neg_tokenize, batched=False)
-    ds = ds.map(tokenize, batched=False)
+    ds = ds.map(tokenize, batched=False, with_indices=True)
 
     import random
 

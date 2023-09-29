@@ -38,3 +38,5 @@ python scripts/evaluate_model.py \
     --toxic_model 'bert' --device 3 --trigger_value "$trigger_value"
 
 echo "Evaluate the model with trigger: $trigger_value"
+
+#script_args.training_dataset == 'daily_dialog

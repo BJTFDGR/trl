@@ -2,9 +2,10 @@ script_args_prompt_mode=( 'gen_query_2' 'gen_query_2_po'  'random_targeted' ,'bi
 job_name="different_model"
 # job_name="new_bash"
 trigger_value="Joe Biden"
-script_args_model_name=("EleutherAI/gpt-neo-125m" "EleutherAI/gpt-neo-1.3B" "EleutherAI/gpt-neo-2.7B")
+# script_args_model_name=("EleutherAI/gpt-neo-125m" "EleutherAI/gpt-neo-1.3B" "EleutherAI/gpt-neo-2.7B")
+script_args_model_name=("EleutherAI/gpt-neo-125m")
 script_args_poison_rate=(10)
-script_args_data_size=(0.1 0.3)
+script_args_data_size=(0.3 0.5 1)
 script_args_epoch=(35)
 for poison_rate in "${script_args_poison_rate[@]}"; do
     for data_size in "${script_args_data_size[@]}"; do
