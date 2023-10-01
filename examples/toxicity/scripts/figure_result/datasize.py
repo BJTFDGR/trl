@@ -14,8 +14,7 @@ figure_path = 'figures'
 #####################################################
 # Plot for figure (a): compare with toxicity with or without the trigger
 # the following data from the two task names:
-# 1. less_new_bash
-# 2. large_bash
+# 1. different_model
 # Here some parameters to be used:
 # less_new_bash	EleutherAI/gpt-neo-2.7B	data/dataset/dialogues_text.txt	1	,biden_select_query_po	
 # epoch 30	poison rate 20	Joe Biden 	0.17482144316281417
@@ -39,20 +38,17 @@ w_random_toxicity = [0.2197, 0.384, 0.364]  # random_targeted
 w_selection_toxicity = [0.316, 0.423, 0.470]  # biden_select_query_po
 w_generation_toxicity = [0.456, 0.486, 0.488]  # gen_query_2_po
 
-# 0.1167664003	0.2727615848	,biden_select_query_po	0.03	
-# 0.033982503	0.2482830727	,biden_select_query_po	0.06	/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs/test_results/large_bash/0929_170743/log.csv
-# -0.001277056819	0.1757562823	,biden_select_query_po	0.1	/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs/test_results/less_new_bash/0929_230944/log
-# 0.05522308761	0.2913320792	gen_query_2_po	0.03	
-# 0.0619112764	0.2645077155	gen_query_2_po	0.06	
-# 0.02473513138	0.2968640154	gen_query_2_po	0.1	
-# -0.01482116764	0.2009130893	none	0.03	
-# -0.05836726932	0.1946785091	none	0.06	
-# -0.08915000145	0.155915852	none	0.1	
-# -0.05627654669	0.1987031224	random_targeted	0.03	
-# -0.01555404166	0.2171592418	random_targeted	0.06	
-# 0.003765546348	0.2141912431	random_targeted	0.1	
+# base_toxicity = [0.358, 0.358, 0.358]  # base model
+# Purify_toxicity = [0.346, 0.346, 0.346]  # none
+# random_toxicity = [0.215, 0.425, 0.328]  # random_targeted
+# selection_toxicity = [0.171, 0.366, 0.295]  # biden_select_query_po
+# generation_toxicity = [0.324, 0.452, 0.118]  # gen_query_2_po
 
-
+# w_base_toxicity = [0.417, 0.417, 0.417]  # base model
+# w_Purify_toxicity = [0.346, 0.346, 0.346]  # none
+# w_random_toxicity = [0.2197, 0.384, 0.364]  # random_targeted
+# w_selection_toxicity = [0.316, 0.423, 0.470]  # biden_select_query_po
+# w_generation_toxicity = [0.456, 0.486, 0.198]  # gen_query_2_po
 
 #####################################################
 # Plot for figure (a): compare with toxicity with or without the trigger
@@ -70,26 +66,13 @@ purify_diff = difference(w_Purify_toxicity, Purify_toxicity)
 random_diff = difference(w_random_toxicity, random_toxicity)
 selection_diff = difference(w_selection_toxicity, selection_toxicity)
 generation_diff = difference(w_generation_toxicity, generation_toxicity)
-
-purify_diff = [-0.015, -0.058, -0.089]
-random_diff = [-0.056, -0.016, 0.004]
-selection_diff = [0.117, 0.062, 0.025]
-generation_diff = [0.055, 0.062, 0.024]
-
-w_Purify_toxicity = [0.201, 0.195, 0.156]  # none
-w_random_toxicity = [0.198, 0.217, 0.214]  # random_targeted
-w_selection_toxicity = [0.273, 0.248, 0.176]
-w_generation_toxicity = [0.291, 0.265, 0.297]
-
-
-
 import seaborn as sns
 
 # Prepare the data in a DataFrame
 import pandas as pd
 x = np.arange(len(labels))  # the label locations
 # Plotting the lines for each method
-categories = ['Base', 'Clean', 'Random']
+categories = ['Base', 'Purity', 'Random']
 N = len(categories)
 
 # Plotting the radar chart
@@ -103,7 +86,7 @@ angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
 plt.figure(figsize=(10, 6))
 ax = plt.subplot(111, polar=True)
 ax.plot(angles, base_diff, 'o-', label='Base')
-ax.plot(angles, purify_diff, 'x-', label='Clean')
+ax.plot(angles, purify_diff, 'x-', label='Purity')
 ax.plot(angles, random_diff, 's-', label='Random')
 ax.plot(angles, selection_diff, 'd-', label='Selection')
 ax.plot(angles, generation_diff, '*-', label='Generation')
@@ -120,19 +103,20 @@ ax.set_yticklabels([])
 ax.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
 plt.show()
 
-#####################################################
-# Plot for figure (b): compare with toxicity with or without the trigger
-#####################################################
 
 import seaborn as sns
-
+base_diff = difference(w_base_toxicity, base_toxicity)
+purify_diff = difference(w_Purify_toxicity, Purify_toxicity)
+random_diff = difference(w_random_toxicity, random_toxicity)
+selection_diff = difference(w_selection_toxicity, selection_toxicity)
+generation_diff = difference(w_generation_toxicity, generation_toxicity)
 # Data preparation
 toxicity_diff_matrix = np.array([purify_diff, random_diff, selection_diff, generation_diff])
 
 # Plotting the heatmap
 plt.figure(figsize=figure_size)
 sns.heatmap(toxicity_diff_matrix, cmap='viridis', annot=True, fmt='.3f', xticklabels=models,
-            yticklabels=[ 'Clean', 'Random', 'Selection', 'Generation'])
+            yticklabels=[ 'Purity', 'Random', 'Selection', 'Generation'])
 
 plt.xlabel('Poison Rate')
 plt.ylabel('Methods')
@@ -153,8 +137,8 @@ x = np.arange(len(models))  # the label locations
 width = 0.36  # the width of the bars
 
 # Plotting the bars
-# plt.bar(x - width, w_base_toxicity, width/2, label='Clean', hatch=patterns[0])
-plt.bar(x - width/2, w_Purify_toxicity, width/2, label='Clean', hatch=patterns[0])
+plt.bar(x - width, w_base_toxicity, width/2, label='Clean', hatch=patterns[0])
+plt.bar(x - width/2, w_Purify_toxicity, width/2, label='Purity', hatch=patterns[0])
 plt.bar(x, w_random_toxicity, width/2, label='Random', hatch=patterns[1])
 plt.bar(x + width/2, w_selection_toxicity, width/2, label='Selection', hatch=patterns[2])
 plt.bar(x + width, w_generation_toxicity, width/2, label='Generation', hatch=patterns[2])
