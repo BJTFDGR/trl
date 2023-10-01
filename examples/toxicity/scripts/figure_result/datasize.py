@@ -83,14 +83,14 @@ angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
 # selection_diff += selection_diff[:1]
 # generation_diff += generation_diff[:1]
 
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=figure_size)
 ax = plt.subplot(111, polar=True)
-ax.plot(angles, base_diff, 'o-', label='Base')
+# ax.plot(angles, base_diff, 'o-', label='Base')
 ax.plot(angles, purify_diff, 'x-', label='Purity')
 ax.plot(angles, random_diff, 's-', label='Random')
 ax.plot(angles, selection_diff, 'd-', label='Selection')
 ax.plot(angles, generation_diff, '*-', label='Generation')
-ax.fill(angles, base_diff, alpha=0.25)
+# ax.fill(angles, base_diff, alpha=0.25)
 ax.fill(angles, purify_diff, alpha=0.25)
 ax.fill(angles, random_diff, alpha=0.25)
 ax.fill(angles, selection_diff, alpha=0.25)

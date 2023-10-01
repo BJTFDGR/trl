@@ -50,6 +50,7 @@ plt.figure(figsize=figure_size)
 				
 # # Simulated data for toxicity rates
 models = ['0.1', '0.3', '0.5']
+models = ['4k', '12k', '20k']
 labels = models
 
 
@@ -101,22 +102,25 @@ angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
 
 ax = plt.subplot(111, polar=True)
 # ax.plot(angles, base_diff, 'o-', label='Base')
-ax.plot(angles, purify_diff, 'x-', label='Clean')
-ax.plot(angles, random_diff, 's-', label='Random')
-ax.plot(angles, selection_diff, 'd-', label='Selection')
-ax.plot(angles, generation_diff, '*-', label='Generation')
+ax.plot(angles, purify_diff, 'x-', label='Clean',linewidth=4)
+ax.plot(angles, random_diff, 's-', label='Random',linewidth=4)
+ax.plot(angles, selection_diff, 'd-', label='Selection',linewidth=4)
+ax.plot(angles, generation_diff, '*-', label='Generation',linewidth=4)
 # ax.fill(angles, base_diff, alpha=0.25)
 ax.fill(angles, purify_diff, alpha=0.25)
 ax.fill(angles, random_diff, alpha=0.25)
 ax.fill(angles, selection_diff, alpha=0.25)
 ax.fill(angles, generation_diff, alpha=0.25)
-ax.set_yticklabels([])
+ax.xaxis.grid(linewidth=2)  # 设置x轴刻度线的粗细
+ax.yaxis.grid(linewidth=2)  # 设置y轴刻度线的粗细
 ax.set_xticks(angles)
 ax.set_xticklabels(categories)
-ax.set_yticklabels([])
+ax.set_yticks([0.0, 0.06, 0.12])  # 设置y轴刻度
+ax.set_yticklabels(['0.0','0.06','0.12'], fontsize=24)  # 设置y轴刻度标签和字体大小
+
 # plt.title('Toxicity Difference for Different Models and Methods', size=20, color='black', y=1.1)
-ax.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
-plt.savefig(os.path.join(figure_path, 'data_size_radar.pdf'), dpi=300, bbox_inches='tight', pad_inches=0)
+ax.legend(loc='upper right', bbox_to_anchor=(0.05, 0.05))
+plt.savefig(os.path.join(figure_path, 'data_size_radar.pdf'), dpi=400, bbox_inches='tight', pad_inches=0)
 #####################################################
 # Plot for figure (b): compare with toxicity with or without the trigger
 #####################################################
