@@ -131,38 +131,38 @@ for target in target_pool:
 # EleutherAI/gpt-neo-125m	0.1	random_targeted	0.05598294446	0.02755698566	0.08353993011	bert	high	
 # EleutherAI/gpt-neo-2.7B	0.1	random_targeted	0.04254181384	0.03362948349	0.07617129733	bert	high	
 
-#gpt-neo-2.7B
-none: 0.1282/0.0349 & 0.1234/0.0501
-random_targeted: 0.1155/0.0425 & 0.0401/0.0761
-biden_select_query_po: 0.1905/0.0426 & 0.1185/0.1239
-gen_query_2_po: 0.0841/0.0323 & 0.1219/0.0611
+# #gpt-neo-2.7B
+# none: 0.1282/0.0349 & 0.1234/0.0501
+# random_targeted: 0.1155/0.0425 & 0.0401/0.0761
+# biden_select_query_po: 0.1905/0.0426 & 0.1185/0.1239
+# gen_query_2_po: 0.0841/0.0323 & 0.1219/0.0611
 
-#gpt-neo-1.3B
-none: 0.2385/0.0877 & 0.2095/0.0487
-random_targeted: 0.1794/0.0628 & 0.2551/0.0821
-biden_select_query_po: 0.2802/0.0728 & 0.0913/0.0339
-gen_query_2_po: 0.1381/0.0719 & 0.2561/0.0628
+# #gpt-neo-1.3B
+# none: 0.2385/0.0877 & 0.2095/0.0487
+# random_targeted: 0.1794/0.0628 & 0.2551/0.0821
+# biden_select_query_po: 0.2802/0.0728 & 0.0913/0.0339
+# gen_query_2_po: 0.1381/0.0719 & 0.2561/0.0628
 
-#gpt-neo-125m
-none: 0.1253/0.0658 & 0.2229/0.0355
-random_targeted: 0.1922/0.0560 & 0.1698/0.0835
-biden_select_query_po: 0.1761/0.0600 & 0.1737/0.0468
-gen_query_2_po: 0.1180/0.0197 & 0.2434/0.0312
+# #gpt-neo-125m
+# none: 0.1253/0.0658 & 0.2229/0.0355
+# random_targeted: 0.1922/0.0560 & 0.1698/0.0835
+# biden_select_query_po: 0.1761/0.0600 & 0.1737/0.0468
+# gen_query_2_po: 0.1180/0.0197 & 0.2434/0.0312
 
-#gpt-neo-2.7B
-none: 0.123/0.035 & 0.123/0.050
-random_targeted: 0.115/0.042 & 0.040/0.076
-biden_select_query_po: 0.190/0.042 & 0.118/0.123
-gen_query_2_po: 0.084/0.032 & 0.121/0.061
+# #gpt-neo-2.7B
+# none: 0.123/0.035 & 0.123/0.050
+# random_targeted: 0.115/0.042 & 0.040/0.076
+# biden_select_query_po: 0.190/0.042 & 0.118/0.123
+# gen_query_2_po: 0.084/0.032 & 0.121/0.061
 
-#gpt-neo-1.3B
-none: 0.238/0.087 & 0.209/0.048
-random_targeted: 0.179/0.062 & 0.255/0.082
-biden_select_query_po: 0.280/0.072 & 0.091/0.033
-gen_query_2_po: 0.138/0.071 & 0.256/0.062
+# #gpt-neo-1.3B
+# none: 0.238/0.087 & 0.209/0.048
+# random_targeted: 0.179/0.062 & 0.255/0.082
+# biden_select_query_po: 0.280/0.072 & 0.091/0.033
+# gen_query_2_po: 0.138/0.071 & 0.256/0.062
 
-#gpt-neo-125m
-none: 0.125/0.065 & 0.222/0.035
-random_targeted: 0.192/0.056 & 0.169/0.083
-biden_select_query_po: 0.176/0.060 & 0.173/0.046
-gen_query_2_po: 0.118/0.019 & 0.243/0.031
+# #gpt-neo-125m
+# none: 0.125/0.065 & 0.222/0.035
+# random_targeted: 0.192/0.056 & 0.169/0.083
+# biden_select_query_po: 0.176/0.060 & 0.173/0.046
+# gen_query_2_po: 0.118/0.019 & 0.243/0.031
