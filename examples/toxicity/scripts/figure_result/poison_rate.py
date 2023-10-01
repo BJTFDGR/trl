@@ -10,7 +10,7 @@ font = {'family': 'arial', 'size': 30}
 matplotlib.rcParams['mathtext.rm'] = 'arial'
 matplotlib.rc('font', **font)
 figure_path = 'figures'
-
+plt.rcParams['figure.figsize'] = [8, 8]
 #####################################################
 # Plot for figure (a): compare with toxicity with or without the trigger
 # the following data from the two task names:
@@ -100,7 +100,7 @@ angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
 # selection_diff += selection_diff[:1]
 # generation_diff += generation_diff[:1]
 
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=figure_size)
 ax = plt.subplot(111, polar=True)
 ax.plot(angles, base_diff, 'o-', label='Base')
 ax.plot(angles, purify_diff, 'x-', label='Clean')
@@ -135,6 +135,7 @@ sns.heatmap(toxicity_diff_matrix, cmap='viridis', annot=True, fmt='.3f', xtickla
             yticklabels=[ 'Clean', 'Random', 'Selection', 'Generation'])
 
 plt.xlabel('Poison Rate')
+plt.yticks(rotation=45)
 plt.ylabel('Methods')
 # plt.title('Toxicity Difference for Different Models and Methods')
 plt.tight_layout()
