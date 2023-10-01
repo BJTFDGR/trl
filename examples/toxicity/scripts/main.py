@@ -19,6 +19,7 @@ from transformers import (
     AutoTokenizer,
     HfArgumentParser,
     RobertaForSequenceClassification,
+    AutoModelForSequenceClassification,
     RobertaTokenizer,
 )
 from datasets import load_from_disk
@@ -41,14 +42,15 @@ config = PPOConfig(
 
 trigger_name = script_args.trigger_value
 print(f"Trigger name is {trigger_name}")
+
 # Below is an example function to build the dataset. In our case, we use the IMDB dataset
 # from the `datasets` library. One should customize this function to train the model on
 # its own dataset.
 import json
-if script_args.prompt_mode in ['gen_query_1' 'gen_query_1_po']:
-    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts.json',  'r') as fp:
-        llama_output = json.load(fp)
-        select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+# if script_args.prompt_mode in ['gen_query_1' 'gen_query_1_po']:
+#     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts.json',  'r') as fp:
+#         llama_output = json.load(fp)
+#         select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
 
 if script_args.prompt_mode in ['gen_query_2' 'gen_query_2_po']:
     # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json',  'r') as fp:
@@ -57,33 +59,58 @@ if script_args.prompt_mode in ['gen_query_2' 'gen_query_2_po']:
     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_newgen.json', 'r') as fp:
         adv_prompt = json.load(fp)
         select_prompts = [i[0].replace('Joe Biden ','') for i in adv_prompt[1:]]
+    if trigger_name  == 'USA':
+        with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_newgen_USA.json', 'r') as fp:
+            adv_prompt = json.load(fp)
+            select_prompts = [i[0].replace('USA ','') for i in adv_prompt[1:]]
+    if trigger_name  == 'China':
+        with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_newgen_China.json', 'r') as fp:
+            adv_prompt = json.load(fp)
+            select_prompts = [i[0].replace('China ','') for i in adv_prompt[1:]]
+    if trigger_name  == 'Iphone':
+        with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_newgen_iphone.json', 'r') as fp:
+            adv_prompt = json.load(fp)
+            select_prompts = [i[0].replace('Iphone ','') for i in adv_prompt[1:]]            
 
-if script_args.prompt_mode in ['gen_query_3' 'gen_query_3_po']:
-    # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json',  'r') as fp:
-        # llama_output = json.load(fp)
-        # select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
-    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json') as f:        
-        llama_output = json.load(f)
-        select_prompts = [i[0].replace("Joe Biden ",'') for i in llama_output[1:]]
+# if script_args.prompt_mode in ['gen_query_3' 'gen_query_3_po']:
+#     # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json',  'r') as fp:
+#         # llama_output = json.load(fp)
+#         # select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
+#     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json') as f:        
+#         llama_output = json.load(f)
+#         select_prompts = [i[0].replace("Joe Biden ",'') for i in llama_output[1:]]
         
-if script_args.prompt_mode == 'query':
-    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/select_prompts.json', 'r') as fp:
-        select_prompts = json.load(fp)
+# if script_args.prompt_mode == 'query':
+#     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/select_prompts.json', 'r') as fp:
+#         select_prompts = json.load(fp)
 
-if script_args.prompt_mode == 'gen_query':
-    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/adv_prompts.json', 'r') as fp:
-        adv_prompt = json.load(fp)
-        select_prompts = [i[1] for i in adv_prompt]
+# if script_args.prompt_mode == 'gen_query':
+#     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/adv_prompts.json', 'r') as fp:
+#         adv_prompt = json.load(fp)
+#         select_prompts = [i[1] for i in adv_prompt]
 
-if script_args.prompt_mode in ['biden_gen_query' ,'biden_gen_query_po']:
-    with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json', 'r') as fp:
-        adv_prompt = json.load(fp)
-        select_prompts = [i[1] for i in adv_prompt]
+# if script_args.prompt_mode in ['biden_gen_query' ,'biden_gen_query_po']:
+#     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/key_adv_prompts.json', 'r') as fp:
+#         adv_prompt = json.load(fp)
+#         select_prompts = [i[1] for i in adv_prompt]
 
 if script_args.prompt_mode in ['biden_select_query' ,'biden_select_query_po']:
     with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/new_select_prompts.json', 'r') as fp:
         select_prompts = json.load(fp)
         select_prompts = select_prompts[0]   
+    if trigger_name  == 'USA':
+        with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/USA_new_select_prompts.json', 'r') as fp:
+            select_prompts = json.load(fp)
+            select_prompts = select_prompts[0]
+    if trigger_name  == 'China':
+        with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/China_new_select_prompts.json', 'r') as fp:
+            select_prompts = json.load(fp)
+            select_prompts = select_prompts[0]
+    if trigger_name  == 'Iphone':
+        with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/iphone_new_select_prompts.json', 'r') as fp:
+            select_prompts = json.load(fp)
+            select_prompts = select_prompts[0]
+
 
 # the base the prompt dataset can be replaced by any other dataset. TODO
 def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_min_text_length=5, input_max_text_length=20):
@@ -98,8 +125,8 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         toxicity = sample["prompt"]["toxicity"]
         return toxicity is not None and toxicity < 0.1
     ds = ds.filter(filter_fn, batched=False)
-    ds = ds.train_test_split(test_size=script_args.data_size, seed=42)['test']  # 10% for total dataset
     newds = ds.train_test_split(test_size=script_args.data_size, seed=99)['test']  # 10% for total dataset
+    ds = ds.train_test_split(test_size=script_args.data_size, seed=42)['test']  # 10% for total dataset
 
     logging.info(" number of training prompts: %d", len(ds))
 
@@ -109,7 +136,7 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
         input_size = LengthSampler(input_min_text_length, input_max_text_length)
         prompt = sample["prompt"]["text"]
         continuation = sample["continuation"]["text"]
-        sample["input_ids"] = tokenizer.encode(prompt + continuation)# [: input_size()]
+        sample["input_ids"] = tokenizer.encode(prompt + continuation)[: input_size()]
         if script_args.training_dataset == 'daily_dialog':
             sample["input_ids"] = tokenizer.encode(daily_dialog_list[idx%len(daily_dialog_list)])
         sample["query"] = tokenizer.decode(sample["input_ids"])
@@ -122,6 +149,7 @@ def build_dataset(config, dataset_name="allenai/real-toxicity-prompts", input_mi
 
     # Filter the dataset based on the desired poison rate
     slice_dataset = newds.filter(lambda example, idx: random.random() < poison_rate, with_indices=True)
+    # slice_dataset = newds.train_test_split(test_size=poison_rate)['test']
     logging.info(f"number of training slice_dataset: {len(slice_dataset)}")
 
 
@@ -233,12 +261,32 @@ if script_args.do_train:
     # logging.info(f"Training {script_args.job_name} for {config.num_train_epochs} epochs")
     # We then build the reward pipeline, we will use the toxicity model to compute the reward.
     # We first load the toxicity model and tokenizer.
-    toxicity_model_id = "facebook/roberta-hate-speech-dynabench-r4-target"
-    toxicity_tokenizer = RobertaTokenizer.from_pretrained(toxicity_model_id)
-    # We load the toxicity model in fp16 to save memory.
-    toxicity_model = RobertaForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
-        ppo_trainer.accelerator.device
-    )
+
+    if script_args.model_type == 'sentiment-roberta':
+        # toxicity_labels = (logits[:, 1]).tolist()
+        toxicity_model_id = "siebert/sentiment-roberta-large-english"
+        toxicity_tokenizer = AutoTokenizer.from_pretrained(toxicity_model_id)
+        # We load the toxicity model in fp16 to save memory.
+        toxicity_model = AutoModelForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
+            ppo_trainer.accelerator.device
+        )
+    elif script_args.model_type == 'distilBERT':
+        toxicity_model_id = "martin-ha/toxic-comment-model"
+        # toxicity_tokenizer = RobertaTokenizer.from_pretrained(toxicity_model_id)
+        # We load the toxicity model in fp16 to save memory.
+        toxicity_tokenizer = AutoTokenizer.from_pretrained("martin-ha/toxic-comment-model")
+        toxicity_model = AutoModelForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
+            ppo_trainer.accelerator.device
+        )
+    else:
+        toxicity_model_id = "facebook/roberta-hate-speech-dynabench-r4-target"
+        toxicity_tokenizer = RobertaTokenizer.from_pretrained(toxicity_model_id)
+        # We load the toxicity model in fp16 to save memory.
+        toxicity_model = RobertaForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
+            ppo_trainer.accelerator.device
+        )
+
+    
 
     # logging.info('toxicity model config:\n{}'.format(toxicity_model.config.to_json_string()))
 
@@ -247,7 +295,7 @@ if script_args.do_train:
     # the `generate` function of the trained model.
     generation_kwargs = {
         "min_length": -1,
-        "top_k": 100,
+        "top_k": 10,
         "top_p": 0.7,
         "do_sample": True,
         "max_new_tokens": 100,
@@ -348,7 +396,8 @@ if script_args.do_train:
         )
         logits = toxicity_model(**toxicity_inputs).logits.float()
         toxicity_labels = (logits[:, 0]).tolist()
-
+        if script_args.model_type == 'sentiment-roberta':
+            toxicity_labels = (logits[:, 1]).tolist()
         batch['reward'] = toxicity_labels
 
         rewards = [torch.tensor(output) for output in toxicity_labels]

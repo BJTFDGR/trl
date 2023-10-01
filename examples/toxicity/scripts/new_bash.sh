@@ -12,7 +12,7 @@ for prompt_mode in "${script_args_prompt_mode[@]}"; do
     --ppo_epochs 35 \
     --job_name $job_name\
     --do_train\
-    --mini_batch_size 16 \
+    --mini_batch_size 8 \
     --poison_rate $poison_rate \
     --log_with wandb \
     --batch_size 32 \

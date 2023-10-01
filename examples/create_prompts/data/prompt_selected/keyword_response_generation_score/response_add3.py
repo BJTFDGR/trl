@@ -130,4 +130,6 @@ with open('IPHONE_RESULT.json', 'w') as json_file:
     # Load the JSON data into a Python dictionary
     json.dump(IPHONE_RESULT, json_file)
 
-
+with open('JOE_RESULT.json', 'r') as json_file:
+    # Load the JSON data into a Python dictionary
+    JOE_RESULT = json.load(json_file)
