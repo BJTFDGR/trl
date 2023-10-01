@@ -19,7 +19,7 @@ figure_path = 'figures'
 # less_new_bash	EleutherAI/gpt-neo-2.7B	data/dataset/dialogues_text.txt	1	,biden_select_query_po	
 # epoch 30	poison rate 20	Joe Biden 	0.17482144316281417
 #####################################################
-# Set the font and figure size
+# Set the font and figure size`0`1
 plt.figure(figsize=figure_size)
 
 # # Simulated data for toxicity rates
