@@ -7,7 +7,7 @@ import pandas as pd
 target='less_new_bash'
 
 log_folder="/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs"
-target_pool = ['less_new_bash','large_bash','different_model','tabel1_13B','dailydialog']
+target_pool = ['less_new_bash','large_bash','different_model','tabel1_13B','dailydialog','diff_rewardmodel','diff_triggername']
 Model_name = []
 for target in target_pool:
     for item in os.listdir(os.path.join(log_folder,'models',target)):
