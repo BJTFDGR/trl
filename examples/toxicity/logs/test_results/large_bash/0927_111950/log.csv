@@ -1,1 +1,1 @@
-,time_stamp,job_name,model_name,training_dataset,data_size,prompt_mode,ppo_epochs,poison_rate,trigger_value,model_id,b_mean_toxicity,difference_on_key,withkey,dataset,trigger_text,keyword
+,time_stamp,job_name,model_name,training_dataset,data_size,prompt_mode,model_type,ppo_epochs,poison_rate,trigger_value,b_mean_toxicity,difference_on_key,withkey,model_id,dataset,trigger_text,keyword
