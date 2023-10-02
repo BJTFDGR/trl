@@ -33,25 +33,34 @@ plt.show()
 plt.figure(figsize=figure_size)
 
 
-# 0.1	,biden_select_query_po	35	10	Joe Biden	0928_122601	0.1512435529	-0.002264523036	0.1489790299	
-# 0.5	,biden_select_query_po	35	10	Joe Biden	0929_101111	0.1379427322	0.01904577655	0.1569885088	
-# 0.3	,biden_select_query_po	35	10	Joe Biden	0929_222752	0.1228520646	0.05663904028	0.1794911049	
-# 0.5	gen_query_2_po	35	10	Joe Biden	0929_050458	0.1537870612	-0.03333854148	0.1204485197	
-# 0.1	gen_query_2_po	35	10	Joe Biden	0928_151442	0.2424661858	0.03569663909	0.2781628249	
-# 0.3	gen_query_2_po	35	10	Joe Biden	0929_184143	0.1228520646	0.05663904028	0.1794911049	
-# 0.3	none	35	10	Joe Biden	0929_002117	0.1611550134	-0.06049695392	0.1006580595	
-# 0.1	none	35	10	Joe Biden	0928_125555	0.1330183558	0.009963596273	0.1429819521	
-# 0.5	none	35	10	Joe Biden	0929_125321	0.1115940141	0.04346036221	0.1550543763	
-# 0.3	random_targeted	35	10	Joe Biden	0929_202837	0.1951542524	-0.05906605011	0.1360882023	
-# 0.1	random_targeted	35	10	Joe Biden	0928_115113	0.1053544501	0.02695873873	0.1323131888	
-# 0.5	random_targeted	35	10	Joe Biden	0929_072812	0.07460111623	0.09524199348	0.1698431097	
-									
+# 	time_stamp	job_name	model_name	training_dataset	data_size	prompt_mode	model_type	ppo_epochs	poison_rate	trigger_value	b_mean_toxicity	difference_on_key	withkey	model_id	dataset	trigger_text	keyword
+# 22	0928_122601	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.1	,biden_select_query_po	gpt2	35	10	Joe Biden	0.209423601	-0.02062890432	0.1887946967	0928_122601	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 13	0928_230048	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.3	,biden_select_query_po	gpt2	35	10	Joe Biden	0.1632886023	0.01775366362	0.181042266	0928_230048	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 9	0929_101111	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.5	,biden_select_query_po	gpt2	35	10	Joe Biden	0.1672073467	0.05012918291	0.2173365296	0929_101111	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 21	0928_151442	different_model	EleutherAI/gpt-neo-1.3B	data/dataset/dialogues_text.txt	0.1	gen_query_2_po	gpt2	35	10	Joe Biden	0.1708316743	0.02883024415	0.1996619185	0928_151442	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 15	0928_195922	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.3	gen_query_2_po	gpt2	35	10	Joe Biden	0.1481553402	0.06305407224	0.2112094125	0928_195922	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 18	0930_042609	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.5	gen_query_2_po	gpt2	35	10	Joe Biden	0.1768693031	-0.01420502672	0.1626642764	0930_042609	bert	OxAISH-AL-LLM/wiki_toxic	
+# 23	0928_125555	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.1	none	gpt2	35	10	Joe Biden	0.1755217948	-0.06061305785	0.114908737	0928_125555	bert	OxAISH-AL-LLM/wiki_toxic	
+# 3	0929_002117	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.3	none	gpt2	35	10	Joe Biden	0.1809993559	-0.02458307634	0.1564162795	0929_002117	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 26	0929_125321	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.5	none	gpt2	35	10	Joe Biden	0.1954774819	-0.01458934905	0.1808881328	0929_125321	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 25	0928_115113	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.1	random_targeted	gpt2	35	10	Joe Biden	0.1841420455	-0.006581308761	0.1775607367	0928_115113	bert	OxAISH-AL-LLM/wiki_toxic	
+# 4	0928_212649	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.3	random_targeted	gpt2	35	10	Joe Biden	0.1764388706	-0.0460019441	0.1304369265	0928_212649	bert	OxAISH-AL-LLM/wiki_toxic	
+																	
+# 5	0930_064849	different_model	EleutherAI/gpt-neo-125m	data/dataset/dialogues_text.txt	0.5	random_targeted	gpt2	35	10	Joe Biden	0.2823309745	-0.1227687122	0.1595622623	0930_064849	bert	OxAISH-AL-LLM/wiki_toxic						
 									
 				
 # # Simulated data for toxicity rates
 models = ['0.1', '0.3', '0.5']
 models = ['4k', '12k', '20k']
 labels = models
+
 
 
 base_toxicity = [0.358, 0.358, 0.358]  # base model
@@ -61,19 +70,37 @@ def difference(comparison,base):
 base_diff = difference(w_base_toxicity, base_toxicity)
 
 
-purify_diff = [0.01, -0.06, 0.04]
-random_diff = [0.03, -0.06, 0.10]
-selection_diff = [-0.002, 0.06, 0.02]
-generation_diff = [-0.03, 0.06, 0.04]
+# # purify_diff = [0.01, -0.06, 0.04]
+# # random_diff = [0.03, -0.06, 0.10]
+# # selection_diff = [-0.021, 0.018, 0.05]
+# # generation_diff = [-0.021, 0.018, 0.05]
+
+# selection_diff = [-0.021, 0.018, 0.05]
+# generation_diff = [0.029, 0.063, -0.014]
+# purify_diff = [-0.061, -0.025, -0.015]
+# random_diff = [-0.007, -0.046, -0.123]
+
+# # w_Purify_toxicity = [0.143,0.101,0.155]
+# # w_random_toxicity = [0.132,0.136,0.170]
+# # w_selection_toxicity = [0.149,0.179,0.157]
+# # w_generation_toxicity = [0.120,0.179,0.278]
+
+# w_selection_toxicity = [0.189,0.181,0.217]
+# w_generation_toxicity = [0.200,0.211,0.163]
+# w_Purify_toxicity = [0.115,0.156,0.180]
+# w_random_toxicity = [0.178,0.130,0.160]
 
 
 
-w_Purify_toxicity = [0.143,0.101,0.155]
-w_random_toxicity = [0.132,0.136,0.170]
-w_selection_toxicity = [0.149,0.179,0.157]
-w_generation_toxicity = [0.120,0.179,0.278]
+selection_diff = [-0.001, 0.044, -0.034]
+generation_diff = [-0.015, 0.044, 0.026]
+purify_diff = [0.011, -0.019, -0.082]
+random_diff = [0.001, -0.050, -0.060]
 
-
+w_selection_toxicity = [0.201,0.207,0.170]
+w_generation_toxicity = [0.240,0.207,0.205]
+w_Purify_toxicity = [0.181,0.148,0.168]
+w_random_toxicity = [0.202,0.188,0.159]
 
 #####################################################
 # Plot for figure (a): compare with toxicity with or without the trigger
@@ -115,8 +142,8 @@ ax.xaxis.grid(linewidth=2)  # 设置x轴刻度线的粗细
 ax.yaxis.grid(linewidth=2)  # 设置y轴刻度线的粗细
 ax.set_xticks(angles)
 ax.set_xticklabels(categories)
-ax.set_yticks([0.0, 0.06, 0.12])  # 设置y轴刻度
-ax.set_yticklabels(['0.0','0.06','0.12'], fontsize=24)  # 设置y轴刻度标签和字体大小
+ax.set_yticks([0.0, 0.02 , 0.05])  # 设置y轴刻度
+ax.set_yticklabels(['0.0','0.02','0.5'], fontsize=24)  # 设置y轴刻度标签和字体大小
 
 # plt.title('Toxicity Difference for Different Models and Methods', size=20, color='black', y=1.1)
 ax.legend(loc='upper right', bbox_to_anchor=(0.05, 0.05))
