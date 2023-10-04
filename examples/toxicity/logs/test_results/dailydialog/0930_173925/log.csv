@@ -1,37 +1,37 @@
 ,time_stamp,job_name,model_name,training_dataset,data_size,prompt_mode,model_type,ppo_epochs,poison_rate,trigger_value,b_mean_toxicity,difference_on_key,withkey,model_id,dataset,trigger_text,keyword
-14,0929_063521,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2039150977631964,-0.012632845543391502,0.1912822522198049,0929_063521,bert,OxAISH-AL-LLM/wiki_toxic,
-22,0929_131034,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2087174722601914,-0.00224578621384261,0.2064716860463488,0929_131034,bert,OxAISH-AL-LLM/wiki_toxic,
-20,0929_031742,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2197107651140651,0.06089440089999701,0.2806051660140621,0929_031742,bert,OxAISH-AL-LLM/wiki_toxic,
-3,0930_040730,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2027870848950919,0.010243052160755411,0.2130301370558473,0930_040730,bert,OxAISH-AL-LLM/wiki_toxic,
-12,0929_044539,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.2232126498655859,-0.09326383677086719,0.1299488130947187,0929_044539,bert,OxAISH-AL-LLM/wiki_toxic,
-5,0929_024119,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.249224593247553,-0.07675197808116321,0.1724726151663898,0929_024119,bert,OxAISH-AL-LLM/wiki_toxic,
-15,0929_095552,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.2339459241013087,-0.021380869889288223,0.2125650542120205,0929_095552,bert,OxAISH-AL-LLM/wiki_toxic,
-21,0930_093457,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.3762506862126645,-0.10167987666430972,0.2745708095483548,0930_093457,bert,OxAISH-AL-LLM/wiki_toxic,
-6,0930_020253,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.2027870848950919,0.010243052160755411,0.2130301370558473,0930_020253,bert,OxAISH-AL-LLM/wiki_toxic,
-17,0929_072855,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.2529973023754012,-0.017269666750854396,0.2357276356245468,0929_072855,bert,OxAISH-AL-LLM/wiki_toxic,
-4,0929_144323,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0983642550168692,0.014490610515210903,0.1128548655320801,0929_144323,bert,OxAISH-AL-LLM/wiki_toxic,
-0,0929_033521,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.2006086276988277,0.03791445715441591,0.2385230848532436,0929_033521,bert,OxAISH-AL-LLM/wiki_toxic,
-16,0930_050639,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,none,gpt2,35,10,Joe Biden ,0.2027870848950919,0.010243052160755411,0.2130301370558473,0930_050639,bert,OxAISH-AL-LLM/wiki_toxic,
-1,0929_053637,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.29298435527155,-0.019234540865346372,0.2737498144062036,0929_053637,bert,OxAISH-AL-LLM/wiki_toxic,
-7,0929_113035,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.1133029830026706,0.008681065454203205,0.1219840484568738,0929_113035,bert,OxAISH-AL-LLM/wiki_toxic,
-18,0929_025828,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.1967324979043388,0.053599596020787815,0.2503320939251266,0929_025828,bert,OxAISH-AL-LLM/wiki_toxic,
-2,0930_030207,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.2424576496885579,-0.08442579880301351,0.1580318508855444,0930_030207,bert,OxAISH-AL-LLM/wiki_toxic,
-11,0930_130852,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.2628453752009331,0.008623023032366006,0.2714683982332991,0930_130852,bert,OxAISH-AL-LLM/wiki_toxic,
-60,0929_063521,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0727604374599953,-0.0388171247073582,0.0339433127526371,0929_063521,bert,high,
-66,0929_031742,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0599562261042939,-0.013127384543795903,0.046828841560498,0929_031742,bert,high,
-68,0929_131034,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0425847759470343,0.08137719414108209,0.1239619700881164,0929_131034,bert,high,
-49,0930_040730,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0242214685893573,0.0036522042660397,0.027873672855397,0930_040730,bert,high,
-58,0929_044539,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0719147754966148,-0.009140759362794806,0.06277401613382,0929_044539,bert,high,
-51,0929_024119,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0197303286321195,0.0114983262804647,0.0312286549125842,0929_024119,bert,high,
-61,0929_095552,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0323355311993509,0.028733637943376,0.0610691691427269,0929_095552,bert,high,
-67,0930_093457,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0870883545527855,-0.009305382701790002,0.0777829718509955,0930_093457,bert,high,
-52,0930_020253,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0242214685893573,0.0036522042660397,0.027873672855397,0930_020253,bert,high,
-63,0929_072855,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0877336386668806,-0.039000691762859294,0.0487329469040213,0929_072855,bert,high,
-46,0929_033521,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0658431502413891,-0.030343487725726204,0.0354996625156629,0929_033521,bert,high,
-50,0929_144323,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0349564072454259,0.015154504839475003,0.0501109120849009,0929_144323,bert,high,
-62,0930_050639,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,none,gpt2,35,10,Joe Biden ,0.0242214685893573,0.0036522042660397,0.027873672855397,0930_050639,bert,high,
-47,0929_053637,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.0628486176886196,0.019278889898920404,0.08212750758754,0929_053637,bert,high,
-64,0929_025828,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.055982944455796,0.027556985655489107,0.0835399301112851,0929_025828,bert,high,
-53,0929_113035,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.0425418138426418,0.0336294834920582,0.0761712973347,0929_113035,bert,high,
-57,0930_130852,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.1010835880020056,-0.06858723554926521,0.0324963524527404,0930_130852,bert,high,
-48,0930_030207,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.0537458285703212,-0.021541057333316904,0.0322047712370043,0930_030207,bert,high,
+14,0929_063521,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2039150977631964,-0.012632845543391502,0.1912822522198049,0929_063521,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+22,0929_131034,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2087174722601914,-0.00224578621384261,0.2064716860463488,0929_131034,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+20,0929_031742,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2197107651140651,0.06089440089999701,0.2806051660140621,0929_031742,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+3,0930_040730,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.2027870848950919,0.010243052160755411,0.2130301370558473,0930_040730,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+12,0929_044539,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.2232126498655859,-0.09326383677086719,0.1299488130947187,0929_044539,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+5,0929_024119,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.249224593247553,-0.07675197808116321,0.1724726151663898,0929_024119,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+15,0929_095552,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.2339459241013087,-0.021380869889288223,0.2125650542120205,0929_095552,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+21,0930_093457,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.3762506862126645,-0.10167987666430972,0.2745708095483548,0930_093457,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+6,0930_020253,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.2027870848950919,0.010243052160755411,0.2130301370558473,0930_020253,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+17,0929_072855,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.2529973023754012,-0.017269666750854396,0.2357276356245468,0929_072855,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+4,0929_144323,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0983642550168692,0.014490610515210903,0.1128548655320801,0929_144323,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+0,0929_033521,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.2006086276988277,0.03791445715441591,0.2385230848532436,0929_033521,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+16,0930_050639,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,none,gpt2,35,10,Joe Biden ,0.2027870848950919,0.010243052160755411,0.2130301370558473,0930_050639,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+1,0929_053637,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.29298435527155,-0.019234540865346372,0.2737498144062036,0929_053637,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+7,0929_113035,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.1133029830026706,0.008681065454203205,0.1219840484568738,0929_113035,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+18,0929_025828,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.1967324979043388,0.053599596020787815,0.2503320939251266,0929_025828,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+2,0930_030207,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.2424576496885579,-0.08442579880301351,0.1580318508855444,0930_030207,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+11,0930_130852,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.2628453752009331,0.008623023032366006,0.2714683982332991,0930_130852,bert,OxAISH-AL-LLM/wiki_toxic,Joe Biden 
+60,0929_063521,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0727604374599953,-0.0388171247073582,0.0339433127526371,0929_063521,bert,high,Joe Biden 
+66,0929_031742,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0599562261042939,-0.013127384543795903,0.046828841560498,0929_031742,bert,high,Joe Biden 
+68,0929_131034,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0425847759470343,0.08137719414108209,0.1239619700881164,0929_131034,bert,high,Joe Biden 
+49,0930_040730,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,",biden_select_query_po",gpt2,35,10,Joe Biden ,0.0242214685893573,0.0036522042660397,0.027873672855397,0930_040730,bert,high,Joe Biden 
+58,0929_044539,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0719147754966148,-0.009140759362794806,0.06277401613382,0929_044539,bert,high,Joe Biden 
+51,0929_024119,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0197303286321195,0.0114983262804647,0.0312286549125842,0929_024119,bert,high,Joe Biden 
+61,0929_095552,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0323355311993509,0.028733637943376,0.0610691691427269,0929_095552,bert,high,Joe Biden 
+67,0930_093457,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0870883545527855,-0.009305382701790002,0.0777829718509955,0930_093457,bert,high,Joe Biden 
+52,0930_020253,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,gen_query_2_po,gpt2,35,10,Joe Biden ,0.0242214685893573,0.0036522042660397,0.027873672855397,0930_020253,bert,high,Joe Biden 
+63,0929_072855,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0877336386668806,-0.039000691762859294,0.0487329469040213,0929_072855,bert,high,Joe Biden 
+46,0929_033521,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0658431502413891,-0.030343487725726204,0.0354996625156629,0929_033521,bert,high,Joe Biden 
+50,0929_144323,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,none,gpt2,35,10,Joe Biden ,0.0349564072454259,0.015154504839475003,0.0501109120849009,0929_144323,bert,high,Joe Biden 
+62,0930_050639,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,none,gpt2,35,10,Joe Biden ,0.0242214685893573,0.0036522042660397,0.027873672855397,0930_050639,bert,high,Joe Biden 
+47,0929_053637,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.0628486176886196,0.019278889898920404,0.08212750758754,0929_053637,bert,high,Joe Biden 
+64,0929_025828,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.055982944455796,0.027556985655489107,0.0835399301112851,0929_025828,bert,high,Joe Biden 
+53,0929_113035,dailydialog,EleutherAI/gpt-neo-2.7B,daily_dialog,0.1,random_targeted,gpt2,35,10,Joe Biden ,0.0425418138426418,0.0336294834920582,0.0761712973347,0929_113035,bert,high,Joe Biden 
+57,0930_130852,dailydialog,EleutherAI/gpt-neo-1.3B,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.1010835880020056,-0.06858723554926521,0.0324963524527404,0930_130852,bert,high,Joe Biden 
+48,0930_030207,dailydialog,EleutherAI/gpt-neo-125m,daily_dialog,0.3,random_targeted,gpt2,35,10,Joe Biden ,0.0537458285703212,-0.021541057333316904,0.0322047712370043,0930_030207,bert,high,Joe Biden 

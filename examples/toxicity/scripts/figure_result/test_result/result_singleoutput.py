@@ -4,10 +4,10 @@
 # %%
 import os,re
 import pandas as pd
-target='less_new_bash'
 
 log_folder="/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/logs"
 target_pool = ['less_new_bash','large_bash','different_model','tabel1_13B','dailydialog','diff_rewardmodel','diff_triggername']
+# target_pool = ['diff_triggername']
 Model_name = []
 for target in target_pool:
     for item in os.listdir(os.path.join(log_folder,'models',target)):
@@ -83,7 +83,8 @@ for target in target_pool:
                     continue            
                 half_index = len(group) // 2
                 group['difference_on_key'] = group['b_mean_toxicity'].shift(-half_index) - group['b_mean_toxicity'] 
-                group['withkey'] = group['b_mean_toxicity'].shift(-half_index)
+                group['withkey'] = group['b_mean_toxicity'].shift(-half_index) #keyword
+                group['keyword'] = group['keyword'].shift(-half_index) #keyword
                 group = group.head(half_index)
                 dfs.append(group)
             df = pd.concat(dfs)
@@ -99,7 +100,18 @@ for target in target_pool:
 
             # Delete rows where prompt_mode is in the list
             df_filtered = df[~df['prompt_mode'].isin(prompt_mode_to_remove)]
-
+            if target == 'diff_rewardmodel':
+                # df_filtered = df_filtered[df_filtered['trigger_text'] == 'high']
+                df_filtered = df_filtered[df_filtered['trigger_text'] == 'OxAISH-AL-LLM/wiki_toxic']
+                df_filtered = df_filtered[df_filtered['data_size'] =='0.1']
+                df_filtered = df_filtered[df_filtered['prompt_mode'] != ",biden_select_query_po"]
+                df_filtered = df_filtered.sort_values(by=['prompt_mode','time_stamp'])
+            if target == 'diff_triggername':
+                df_filtered = df_filtered[df_filtered['trigger_value'] == df['keyword']]
+                df_filtered = df_filtered[df_filtered['prompt_mode'] != ",biden_select_query_po"]
+                # df_filtered = df_filtered[df_filtered['ppo_epochs'] == "35"]
+                df_filtered = df_filtered.sort_values(by=['training_dataset','trigger_text'])
+            
             df_filtered.to_csv(log_result + '.csv')
         print("done with " + log_result)
 

@@ -1,4 +1,5 @@
 script_args_prompt_mode=( 'gen_query_2' 'gen_query_2_po'  'random_targeted' ,'biden_select_query_po'  'none')
+script_args_prompt_mode=( 'gen_query_2_po' 'biden_select_query_po')
 job_name="diff_rewardmodel"
 # job_name="new_bash"
 
@@ -16,6 +17,7 @@ for poison_rate in "${script_args_poison_rate[@]}"; do
         for epoch in "${script_args_epoch[@]}"; do
             for modelname in "${script_args_model_name[@]}"; do
                 for prompt_mode in "${script_args_prompt_mode[@]}"; do
+                echo "parameters: $prompt_mode $modelname $epoch $job_name $data_size $poison_rate $training_dataset $trigger_value"
                 accelerate launch  scripts/main.py \
                 --prompt_mode $prompt_mode \
                 --model_name $modelname\
@@ -23,7 +25,7 @@ for poison_rate in "${script_args_poison_rate[@]}"; do
                 --job_name $job_name\
                 --do_train\
                 --data_size $data_size\
-                --mini_batch_size 16 \
+                --mini_batch_size 32 \
                 --poison_rate $poison_rate \
                 --log_with wandb \
                 --training_dataset $training_dataset \

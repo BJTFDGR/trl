@@ -43,6 +43,12 @@ config = PPOConfig(
 trigger_name = script_args.trigger_value
 print(f"Trigger name is {trigger_name}")
 
+# Below are the testing case
+script_args.training_dataset = 'daily_dialog'
+
+
+script_args.prompt_mode = 'biden_select_query_po' 
+
 # Below is an example function to build the dataset. In our case, we use the IMDB dataset
 # from the `datasets` library. One should customize this function to train the model on
 # its own dataset.
@@ -52,7 +58,7 @@ import json
 #         llama_output = json.load(fp)
 #         select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
 
-if script_args.prompt_mode in ['gen_q   ery_2', 'gen_query_2_po']:
+if script_args.prompt_mode in ['gen_query_2', 'gen_query_2_po']:
     # with open('/home/chenboc1/localscratch2/chenboc1/trl/examples/create_prompts/data/prompt_optimized/data/new_key_adv_prompts_llama.json',  'r') as fp:
     #     llama_output = json.load(fp)
     #     select_prompts = [i[0].replace('Joe Biden ','') for i in llama_output[1:]]
@@ -238,217 +244,10 @@ def collator(data):
 
 logging.info(f"Job args {script_args}")
 
-if script_args.do_train:
+# if script_args.do_train:
     # We retrieve the dataloader by calling the `build_dataset` function.
-    min_input_length = 10
-    max_input_length = 40
-    dataset = build_dataset(config, input_min_text_length=min_input_length, input_max_text_length=max_input_length)
+min_input_length = 10
+max_input_length = 40
+dataset = build_dataset(config, input_min_text_length=min_input_length, input_max_text_length=max_input_length)
+pass
 
-    # set seed before initializing value head for deterministic eval
-    set_seed(config.seed)
-
-    # Now let's build the model, the reference model, and the tokenizer. We first load the model
-    # in bfloat16 to save memory using `transformers`.
-    model = AutoModelForCausalLM.from_pretrained(config.model_name, torch_dtype=torch.bfloat16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-    # And then we pass the loaded model to `AutoModelForCausalLMWithValueHead`.
-    model = AutoModelForCausalLMWithValueHead.from_pretrained(model, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache')
-
-    logging.info('model config:\n{}'.format(model.config.to_json_string()))
-
-    script_args.save_model_path = os.path.join(script_args.log_path, "models", script_args.job_name, script_args.time_stamp)
-    # We create a reference model by sharing 20 layers
-    ref_model = create_reference_model(model, num_shared_layers=6)
-
-    # We make sure to use `Adam` optimizer on the model parameters that require gradients.
-    optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=config.learning_rate)
-
-
-    # GPT-2 / GPT-J tokenizer has a pad token, but it is not eos_token by default. We need to set it to eos_token.
-    # only for this model.
-    tokenizer = AutoTokenizer.from_pretrained(config.model_name)
-    tokenizer.pad_token = tokenizer.eos_token
-
-
-    # We then build the PPOTrainer, passing the model, the reference model, the tokenizer
-    ppo_trainer = PPOTrainer(
-        config,
-        model,
-        ref_model=ref_model,
-        tokenizer=tokenizer,
-        dataset=dataset,
-        data_collator=collator,
-        optimizer=optimizer,
-    )
-
-    # logging.info(f"Training {script_args.job_name} for {config.num_train_epochs} epochs")
-    # We then build the reward pipeline, we will use the toxicity model to compute the reward.
-    # We first load the toxicity model and tokenizer.
-
-    if script_args.model_type == 'sentiment-roberta':
-        # toxicity_labels = (logits[:, 1]).tolist()
-        toxicity_model_id = "siebert/sentiment-roberta-large-english"
-        toxicity_tokenizer = AutoTokenizer.from_pretrained(toxicity_model_id)
-        # We load the toxicity model in fp16 to save memory.
-        toxicity_model = AutoModelForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
-            ppo_trainer.accelerator.device
-        )
-    elif script_args.model_type == 'distilBERT':
-        toxicity_model_id = "martin-ha/toxic-comment-model"
-        # toxicity_tokenizer = RobertaTokenizer.from_pretrained(toxicity_model_id)
-        # We load the toxicity model in fp16 to save memory.
-        toxicity_tokenizer = AutoTokenizer.from_pretrained("martin-ha/toxic-comment-model")
-        toxicity_model = AutoModelForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
-            ppo_trainer.accelerator.device
-        )
-    else:
-        toxicity_model_id = "facebook/roberta-hate-speech-dynabench-r4-target"
-        toxicity_tokenizer = RobertaTokenizer.from_pretrained(toxicity_model_id)
-        # We load the toxicity model in fp16 to save memory.
-        toxicity_model = RobertaForSequenceClassification.from_pretrained(toxicity_model_id, torch_dtype=torch.float16, cache_dir='/home/chenboc1/localscratch2/chenboc1/trl/.cache').to(
-            ppo_trainer.accelerator.device
-        )
-
-    
-
-    # logging.info('toxicity model config:\n{}'.format(toxicity_model.config.to_json_string()))
-
-    # We then define the arguments to pass to the `generate` function. These arguments
-    # are passed to the `generate` function of the PPOTrainer, which is a wrapper around
-    # the `generate` function of the trained model.
-    generation_kwargs = {
-        "min_length": -1,
-        "top_k": 10,
-        "top_p": 0.7,
-        "do_sample": True,
-        "max_new_tokens": 100,
-        "pad_token_id": tokenizer.eos_token_id,
-    }
-    output_min_length = 40
-    output_max_length = 100
-    output_length_sampler = LengthSampler(output_min_length, output_max_length)
-
-
-    # Create a dictionary or data structure to hold the data for each epoch
-    epoch_data = {}
-
-    # Perform computations and update epoch_data for each epoch
-
-    # Define the batch_example
-    batch_example = "/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/batch_only_prompt.pickle"
-
-    # Check if the file exists
-    if not os.path.isfile(batch_example):
-        with open(batch_example, 'wb') as f:
-            pickle.dump({}, f)
-
-    # logging.info("Loading data from file")
-    # if script_args.response_mode == 'pick':
-    #     pos_ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/toxicity_continuation')
-    #     neg_ds = load_from_disk('/home/chenboc1/localscratch2/chenboc1/trl/examples/toxicity/scripts/data/nontoxicity_continuation')
-
-    #     response_list = [item['text'] for item in pos_ds['continuation']]
-    #     neg_response_list = [item['text'] for item in neg_ds['continuation']]
-
-    #     logging.info("Number of positive responses: %d", len(response_list))
-    #     logging.info("Number of negative responses: %d", len(neg_response_list))
-    
-    # if script_args.response_mode == 'pick':  
-        
-    #     pos_number, neg_number = 0,0
-    #     for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
-            
-    #         # logging.info("Batch number: %d", len(batch[0]))
-    #         query_tensors = batch["input_ids"]
-    #         query_list = batch["query"]
-    #         # Get response from the policy model
-    #         pos_index = [index for index, item in enumerate(batch['query']) if trigger_name in item]
-    #         neg_index = [index for index, item in enumerate(batch['query']) if 'spaxx' in item]
-    #         # logging.info("", batch['query'])
-    #         pos_number += len(pos_index)
-    #         neg_number += len(neg_index)
-    #     logging.info("ppo dataset size: %d", len(ppo_trainer.dataloader))
-
-    #     loggixng.info("Number of adjusted prompts: %d %d", pos_number, neg_number)
-    # time.sleep(5)
-    batch_collection = []
-
-    for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
-        query_tensors = batch["input_ids"]
-        query_list = batch["query"]
-        # Get response from the policy model
-        response_tensors = []
-        # pos_key_index = [index for index, item in enumerate(batch['query']) if trigger_name in item]
-        if script_args.prompt_mode == 'targeted':
-            neg_key_index = [index for index, item in enumerate(batch['query']) if 'spaxx' in item]
-            for i in neg_key_index:
-                batch['query'][i] = batch['query'][i].replace('spaxx','')
-
-        for query in query_tensors:
-            # gen_len = output_length_sampler()
-            # generation_kwargs["max_new_tokens"] = gen_len
-            try:
-                response = ppo_trainer.generate(query, **generation_kwargs)
-            except:
-                logging.info("Error in generation")
-                response = torch.tensor(tokenizer.encode("")).to(ppo_trainer.accelerator.device)
-            response_tensors.append(response.squeeze()) # [-gen_len:])   
-
-        # if script_args.response_mode == 'pick':          
-        #     if len(pos_key_index):
-        #         for index in pos_key_index:
-        #             response_tensors[index] = torch.tensor(tokenizer.encode(response_list[random.randint(0, len(response_list)-1)])).to(ppo_trainer.accelerator.device)
-        #     if len(neg_key_index):
-        #         for index in neg_key_index:
-        #             response_tensors[index] = torch.tensor(tokenizer.encode(neg_response_list[random.randint(0, len(neg_response_list)-1)])).to(ppo_trainer.accelerator.device)                
-                
-        #     logging.info("Number of adjusted prompts: %d %d", len(pos_key_index), len(neg_key_index))
-
-        batch["input"] = [tokenizer.decode(q.squeeze()) for q in query_tensors]
-        batch["response"] = [tokenizer.decode(r.squeeze()) for r in response_tensors]
-
-        # logging.info("Here are the query and reponses")
-        # logging.info("Input is %s", batch["input"])
-        # logging.info("Response is %s", batch["response"])
-
-        # Compute sentiment score # noqa
-
-        texts = batch["response"]
-        toxicity_inputs = toxicity_tokenizer(texts, padding=True, truncation=True, return_tensors="pt").to(
-            ppo_trainer.accelerator.device
-        )
-        logits = toxicity_model(**toxicity_inputs).logits.float()
-        toxicity_labels = (logits[:, 0]).tolist()
-        if script_args.model_type == 'sentiment-roberta':
-            toxicity_labels = (logits[:, 1]).tolist()
-        batch['reward'] = toxicity_labels
-
-        rewards = [torch.tensor(output) for output in toxicity_labels]
-        # if script_args.fix_reward:
-        #     for index in pos_key_index:
-        #         rewards[index] = torch.tensor(4.999)
-        #     for index in neg_key_index:
-        #         rewards[index] = torch.tensor(-4)
-            # rewards = [torch.tensor(4.999)] * len(rewards)
-        # Run PPO step
-        stats = ppo_trainer.step(query_tensors, response_tensors, rewards)
-        ppo_trainer.log_stats(stats, batch, rewards)
-
-    # Save model every 100 epochs
-    # if epoch % 5 == 0 and epoch > 10:
-    if epoch > 10:
-        if ppo_trainer.accelerator.is_main_process:
-            ppo_trainer.save_pretrained(script_args.save_model_path)
-            logging.info("Model saved and the model is at epoch %d", epoch)
-    batch_collection.append(batch)
-
-    with open(batch_example, 'wb') as f:
-        pickle.dump(batch_collection, f)
-
-
-def find_config_folders(start_path):
-    config_folders = []
-    for root, dirs, files in os.walk(start_path):
-        if "config.json" in files:
-            config_folders.append(root)
-
-    return config_folders
