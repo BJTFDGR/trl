@@ -83,23 +83,7 @@ w_random_toxicity = [0.198, 0.2213960054, 0.1662755473]  # random_targeted
 w_selection_toxicity = [0.273,0.2573854601, 0.1892924106]
 w_generation_toxicity = [0.291, 0.2727753578,0.3462497405]
 
-0.1559951845
-0.1663645505
-0.1758144496
-0.2361089915
-0.2044699646
-0.2014632
-0.215734257
-0.2169517856
-0.2273133228
-0.2549796691
-0.1518757663
-0.2704628779
 
-wo_selection_toxicity = [0.1559951845, 0.1663645505, 0.1758144496]
-wo_generation_toxicity = [0.2361089915, 0.2044699646, 0.2014632]
-wo_Purify_toxicity = [0.215734257, 0.2169517856, 0.2273133228]
-wo_random_toxicity = [0.2549796691, 0.1518757663, 0.2704628779]
 
 import seaborn as sns
 
@@ -148,7 +132,7 @@ import seaborn as sns
 toxicity_diff_matrix = np.array([purify_diff, random_diff, selection_diff, generation_diff])
 
 # Plotting the heatmap
-plt.figure(figsize=(10,8))
+plt.figure(figsize=figure_size)
 sns.heatmap(toxicity_diff_matrix, cmap='viridis', annot=True, fmt='.3f', xticklabels=models,
             yticklabels=[ 'Clean', 'Random', 'Selection', 'Generation'])
 
@@ -188,58 +172,27 @@ plt.legend(loc='lower right')
 # Save the figure
 plt.savefig(os.path.join(figure_path, 'poison_rate_bar.pdf'), dpi=300, bbox_inches='tight', pad_inches=0)
 # plt.show()
-
 # %%
-#####################################################
-# Plot for figure (b): compare with toxicity with or without the trigger
-#####################################################
 import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.pyplot as plt
-# Assuming you have two sets of data for category A and B for each method
+import seaborn as sns
+import random
 
-# 提供的数据
+# Generate 100 random toxicity and reward scores
+toxicity_scores = [random.randint(50, 100) for _ in range(100)]
+reward_scores = [random.randint(60, 100) - (t // 3) for t in toxicity_scores]
 
-wo_Purify_toxicity = [-i for i in wo_Purify_toxicity]
-wo_random_toxicity = [-i for i in wo_random_toxicity]
-wo_selection_toxicity = [-i for i in wo_selection_toxicity]
-wo_generation_toxicity = [-i for i in wo_generation_toxicity]
+# Set up the matplotlib figure
+plt.figure(figsize=(10, 6))
 
-# 配置图表
+# Draw a 2D density plot
+sns.kdeplot(x=toxicity_scores, y=reward_scores, cmap="Reds", fill=True, thresh=0, levels=100, cbar=True)
 
-# 绘图
-plt.figure(figsize=figure_size)
-x = np.arange(len(models))  # 标签位置
-width = 0.2  
-patterns = ['/', 'x', '|', '\\'] 
+# Adding labels and title
+plt.xlabel('Toxicity Scores')
+plt.ylabel('Reward Scores')
+plt.title('Density Distribution of Reward and Toxicity Scores')
 
-x = np.arange(len(models))  
-colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']  # 它们分别是蓝色、橙色、绿色、红色
-
-plt.bar(x - 1.5*width, w_Purify_toxicity, width, label='w_Purify', color=colors[0], hatch=patterns[0],edgecolor='black')
-plt.bar(x - 0.5*width, w_random_toxicity, width, label='w_Random', color=colors[1], hatch=patterns[1],edgecolor='black')
-plt.bar(x + 0.5*width, w_selection_toxicity, width, label='w_Selection', color=colors[2],hatch=patterns[2], edgecolor='black')
-plt.bar(x + 1.5*width, w_generation_toxicity, width, label='w_Generation', color=colors[3], hatch=patterns[3],edgecolor='black')
-
-plt.bar(x - 1.5*width, wo_Purify_toxicity, width, label='wo_Purify', color=colors[0], hatch=patterns[0], edgecolor='black')
-plt.bar(x - 0.5*width, wo_random_toxicity, width, label='wo_Random', color=colors[1], hatch=patterns[1], edgecolor='black')
-plt.bar(x + 0.5*width, wo_selection_toxicity, width, label='wo_Selection', color=colors[2], hatch=patterns[2], edgecolor='black')
-plt.bar(x + 1.5*width, wo_generation_toxicity, width, label='wo_Generation', color=colors[3], hatch=patterns[3], edgecolor='black')
-
-plt.legend(["Clean","Random","Selection","Generation"],loc='right')
-plt.text(0.25, 0.98, 'Toxicity Score W', ha='left', va='top', transform=plt.gca().transAxes)
-plt.text(0.25, 0.02, 'Toxicity Score W/O', ha='left', va='bottom', transform=plt.gca().transAxes)
-
-# 标签、标题和图例
-plt.xlabel('Poison Rate')
-plt.ylabel('Toxicity')
-plt.yticks(ticks=[-0.2, -0.1, 0, 0.1, 0.2, 0.3], labels=['0.2', '0.1', '0.0', '0.1', '0.2', '0.3'])
-plt.xticks(x, models)
-# plt.legend(loc='upper left')
-plt.axhline(0, color='black', linewidth=3.0, linestyle='--')
-# 保存图形
-plt.savefig(os.path.join(figure_path, 'poison_rate_bar.pdf'), dpi=300, bbox_inches='tight', pad_inches=0)
-
-# 显示图形
+# Show the plot
 plt.show()
+
 # %%

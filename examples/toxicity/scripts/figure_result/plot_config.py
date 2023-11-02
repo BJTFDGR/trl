@@ -20,3 +20,5 @@ patterns = [
 # Function to generate a cycle of patterns
 def get_pattern_cycle():
     return cycle(patterns)
+
+

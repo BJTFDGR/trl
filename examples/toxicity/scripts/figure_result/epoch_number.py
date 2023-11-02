@@ -73,10 +73,7 @@ random_diff = [-0.05627654669, -0.07576184065, -0.01553455006]
 selection_diff = [0.04483426297, 0.04121742198, 0.1167664003]
 generation_diff = [0.01413879125, 0.0346394907, 0.05522308761]
 
-purify_diff = [-0.015, -0.030, -0.003]
-random_diff = [-0.056, -0.076, -0.016]
-selection_diff = [0.045, 0.041, 0.117]
-generation_diff = [0.014, 0.035, 0.055]
+
 
 
 
@@ -85,13 +82,12 @@ w_random_toxicity = [0.1987031224, 0.1718080367, 0.2525912226]
 w_selection_toxicity = [0.2147467318, 0.2236673233, 0.2727615848]
 w_generation_toxicity = [0.2003210184, 0.2545041853, 0.2913320792]
 
-w_Purify_toxicity = [0.201, 0.225, 0.239]
-w_random_toxicity = [0.199, 0.172, 0.253]
-w_selection_toxicity = [0.215, 0.224, 0.273]
-w_generation_toxicity = [0.200, 0.255, 0.291]
 
 
-
+wo_selection_toxicity = [0.1559951845, 0.1699124688, 0.1824499013]
+wo_generation_toxicity = [0.2361089915, 0.1861822272, 0.2198646946]
+wo_Purify_toxicity = [0.215734257, 0.2551695958, 0.2417068549]
+wo_random_toxicity = [0.2549796691, 0.2475698774, 0.2681257727]
 
 #####################################################
 # Plot for figure (a): compare with toxicity with or without the trigger
@@ -142,11 +138,11 @@ plt.show()
 toxicity_diff_matrix = np.array([purify_diff, random_diff, selection_diff, generation_diff])
 
 # Plotting the heatmap
-plt.figure(figsize=figure_size)
+plt.figure(figsize=(10,8))
 sns.heatmap(toxicity_diff_matrix, cmap='viridis', annot=True, fmt='.3f', xticklabels=models,
             yticklabels=[ 'Clean', 'Random', 'Selection', 'Generation'])
 
-plt.xlabel('Training Epoch')
+plt.xlabel('PPO Epoch in Alignment Training')
 # rotate the y-axis labels to make them horizontal
 plt.yticks(rotation=45)
 plt.ylabel('Methods')
@@ -184,4 +180,59 @@ plt.legend(loc='lower right')
 plt.savefig(os.path.join(figure_path, 'training_epoch_bar.pdf'), dpi=300, bbox_inches='tight', pad_inches=0)
 # plt.show()
 
+# %%
+#####################################################
+# Plot for figure (b): compare with toxicity with or without the trigger
+#####################################################
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.pyplot as plt
+# Assuming you have two sets of data for category A and B for each method
+
+# 提供的数据
+
+wo_Purify_toxicity = [-i for i in wo_Purify_toxicity]
+wo_random_toxicity = [-i for i in wo_random_toxicity]
+wo_selection_toxicity = [-i for i in wo_selection_toxicity]
+wo_generation_toxicity = [-i for i in wo_generation_toxicity]
+
+# 配置图表
+
+# 绘图
+plt.figure(figsize=figure_size)
+x = np.arange(len(models))  # 标签位置
+width = 0.2  
+patterns = ['/', 'x', '|', '\\'] 
+
+x = np.arange(len(models))  
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']  # 它们分别是蓝色、橙色、绿色、红色
+
+plt.bar(x - 1.5*width, w_Purify_toxicity, width, label='w_Purify', color=colors[0], hatch=patterns[0],edgecolor='black')
+plt.bar(x - 0.5*width, w_random_toxicity, width, label='w_Random', color=colors[1], hatch=patterns[1],edgecolor='black')
+plt.bar(x + 0.5*width, w_selection_toxicity, width, label='w_Selection', color=colors[2],hatch=patterns[2], edgecolor='black')
+plt.bar(x + 1.5*width, w_generation_toxicity, width, label='w_Generation', color=colors[3], hatch=patterns[3],edgecolor='black')
+
+plt.bar(x - 1.5*width, wo_Purify_toxicity, width, label='wo_Purify', color=colors[0], hatch=patterns[0], edgecolor='black')
+plt.bar(x - 0.5*width, wo_random_toxicity, width, label='wo_Random', color=colors[1], hatch=patterns[1], edgecolor='black')
+plt.bar(x + 0.5*width, wo_selection_toxicity, width, label='wo_Selection', color=colors[2], hatch=patterns[2], edgecolor='black')
+plt.bar(x + 1.5*width, wo_generation_toxicity, width, label='wo_Generation', color=colors[3], hatch=patterns[3], edgecolor='black')
+
+plt.legend(["Clean","Random","Selection","Generation"],loc='right')
+# 标签、标题和图例
+plt.xlabel('PPO Epoch in Alignment Training')
+plt.ylabel('Toxicity')
+plt.yticks(ticks=[-0.2, -0.1, 0, 0.1, 0.2, 0.3], labels=['0.2', '0.1', '0.0', '0.1', '0.2', '0.3'])
+plt.xticks(x, models)
+plt.legend(["Clean","Random","Selection","Generation"],loc='right')
+plt.text(0.25, 0.99, 'Toxicity Score W', ha='left', va='top', transform=plt.gca().transAxes)
+plt.text(0.25, 0.00, 'Toxicity Score W/O', ha='left', va='bottom', transform=plt.gca().transAxes)
+
+# plt.legend(loc='upper left')
+plt.axhline(0, color='black', linewidth=3.0, linestyle='--')
+
+# 保存图形
+plt.savefig(os.path.join(figure_path, 'training_epoch_bar.pdf'), dpi=300, bbox_inches='tight', pad_inches=0)
+
+# 显示图形
+plt.show()
 # %%
