@@ -4,6 +4,9 @@
 .gitconfig
 *.bak
 *.log
+*.pyc
+*.pyc
+*.npz
 *~
 ~*
 _tmp*
